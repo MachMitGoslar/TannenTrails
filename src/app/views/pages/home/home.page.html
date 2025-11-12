@@ -39,9 +39,9 @@
   @if(step === 'onboarding') {
     <div id="onboarding-container">
       <img src="assets/fox.svg" alt="Foxi" />
-     @if(!navigation_allowed) {
+     @if(!(navigation_allowed | async)) {
       <p> Damit du uns auf der Karte entdecken kannst, muss dein Gerät deinen Standort freigeben. Außer dir bekommt keiner diese Informationen</p>
-      <button ion-button color="secondary" (click)="checkNavigationAllowed(true)" >
+      <button ion-button color="secondary" (click)="checkNavigationAllowed()" >
         Standort freigeben
       </button>
     }

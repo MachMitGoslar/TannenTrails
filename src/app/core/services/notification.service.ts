@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { NotificationConfig, NotificationType } from '../../views/components/notfication/notfication.component';
 import { Geolocation } from '@capacitor/geolocation';
+import { LocationService } from './location-service';
 
 export interface ActiveNotification extends NotificationConfig {
   id: string;
@@ -17,7 +18,7 @@ export class NotificationService {
 
   public notifications$: Observable<ActiveNotification[]> = this.notificationsSubject.asObservable();
 
-  constructor() { }
+  constructor(private locationService: LocationService) { }
 
   /**
    * Show a success notification
@@ -140,7 +141,7 @@ export class NotificationService {
         actionButton: {
           text: 'Einstellungen',
           handler: () => {
-            Geolocation.requestPermissions();
+            this.locationService.checkPermissionStatus();
           }
         }
       }

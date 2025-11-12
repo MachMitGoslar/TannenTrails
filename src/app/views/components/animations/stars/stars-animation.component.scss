@@ -10,7 +10,7 @@
 
 .explosion-star {
   position: absolute;
-  color: --var(--ion-color-secondary);
+  color: rgba(255, 215, 0, 0.3);
   filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
   font-size: 1.5rem;
   animation: starExplosionJS 2.5s ease-out forwards;

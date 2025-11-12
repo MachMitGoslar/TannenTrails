@@ -112,18 +112,11 @@ export class OverviewComponent  implements OnInit, AfterViewInit {
   
 
   setupLocation() {
-    this.locationService.requestLocationPermission().then( granted => {
-      if (granted) {
-          this.setupCenterControl();
-
-      } else {
-        this.notificationService.gpsUnavailable();
-      }
-    });
-  
-    this.locationService.watchPosition().subscribe( position => {
-      console.log("Position:", position);
-      const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
+    this.locationService.watchPosition().subscribe(
+      position => {
+        if(position != null) {
+        console.log("Position:", position);
+        const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
       const accuracy = position.coords.accuracy;
 
       // Add or update the accuracy circle
@@ -156,10 +149,14 @@ export class OverviewComponent  implements OnInit, AfterViewInit {
         userMarker.setLatLng(latLng);
       }
       this.setupUserPath();
+      }
     }, error => {
-      this.notificationService.gpsUnavailable();
-      console.error("Location Error:", error);
-    });
+        console.error("Error getting user position:", error);
+        this.notificationService.gpsUnavailable();
+    }
+
+    );
+    
   }
 
 

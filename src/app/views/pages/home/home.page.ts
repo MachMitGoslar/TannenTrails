@@ -8,6 +8,8 @@ import {
 import { LocationService } from 'src/app/core/services/location-service';
 import { Router, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { NotificationService } from 'src/app/core/services/notification.service';
+import { from, Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -27,11 +29,12 @@ import { CommonModule } from '@angular/common';
 export class HomePage {
 
   step: 'intro' | 'explanation' | 'onboarding' = 'intro';
-  navigation_allowed: boolean = false;
+  navigation_allowed: Observable<boolean> = of(false);
   
   constructor(
     private locationService: LocationService,
-    public router: Router
+    public router: Router,
+    public notificationService: NotificationService
   ) {
     // Icons are now preloaded in AppComponent
   }
@@ -40,10 +43,8 @@ export class HomePage {
     this.step = step;
   }
 
-  checkNavigationAllowed(allowed: boolean) {
-    this.locationService.requestLocationPermission().then((allowed) => {
-      this.navigation_allowed = allowed;
-    });
+  checkNavigationAllowed() {
+    this.navigation_allowed = this.locationService.checkPermissionStatus()
   }
 
   navigateToMap() {
