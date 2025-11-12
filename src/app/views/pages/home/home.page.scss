@@ -1,0 +1,515 @@
+// Import handwritten Google Font
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
+
+#intro-container {
+  text-align: center;
+
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 10%;
+  //transform: translateY(-50%);
+  animation: fadeIn 2s ease-in;
+}
+
+#intro-container img {
+  opacity: 0;
+  animation: logoFadeIn 3s ease-in-out forwards;
+  animation-delay: 0.5s;
+  max-width: 80%;
+  height: auto;
+  margin-bottom: 20px;
+}
+#intro-container p {
+  padding: 0 20px;
+}
+
+#explanation-container {
+  text-align: center;
+
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 10%;
+  //transform: translateY(-50%);
+  animation: fadeIn 2s ease-in;
+}
+
+#explanation-container img {
+  opacity: 0;
+  animation: logoFadeIn 3s ease-in-out forwards;
+  animation-delay: 0.5s;
+  max-width: 80%;
+  height: auto;
+  margin-bottom: 20px;
+}
+#explanation-container p {
+  padding: 0 20px;
+}
+
+// Handwritten Typewriter Text Styling
+.explanation-text {
+  font-family: 'Kalam', cursive;
+  font-weight: 400;
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: var(--ion-text-color-light);
+  text-align: left;
+  position: relative;
+
+  padding: 20px 25px 20px 85px;
+  margin: 20px;
+
+  // Slight rotation for handwritten effect
+  transform: rotate(-0.5deg);
+  
+  // Ink-like text shadow
+  text-shadow: 
+    0.5px 0.5px 0px rgba(0, 0, 0, 0.1),
+    1px 1px 0px rgba(0, 0, 0, 0.05);
+}
+
+// Onboarding Container Styling
+#onboarding-container {
+  text-align: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 5%;
+  padding: 0 20px;
+  animation: fadeIn 2s ease-in;
+  overflow-y: auto;
+  height: 90%;
+
+  img {
+    opacity: 0;
+    animation: logoFadeIn 3s ease-in-out forwards;
+    animation-delay: 0.5s;
+    max-width: 60%;
+    height: auto;
+    margin-bottom: 20px;
+  }
+
+  p {
+    font-family: 'Kalam', cursive;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--ion-text-color-light);
+    margin: 20px 0;
+    padding: 0 10px;
+    
+    &:first-of-type {
+      border-radius: 15px;
+      padding: 20px;
+      margin: 20px 0 30px 0;
+    }
+  }
+
+  // Location permission button
+  button {
+    background: linear-gradient(135deg, var(--ion-color-secondary), var(--ion-color-secondary-shade));
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 20px 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    font-family: 'Kalam', cursive;
+    
+    &:not([disabled]):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    &:not([disabled]):active {
+      transform: translateY(0);
+    }
+    
+    
+    &::before {
+      content: '📍';
+      margin-right: 8px;
+      font-size: 1.2rem;
+    }
+  }
+
+  h3 {
+    font-family: 'Kalam', cursive;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ion-text-color-light);
+    margin: 40px 0 25px 0;
+    position: relative;
+    
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--ion-color-secondary), transparent);
+    }
+  }
+
+  // Rules container
+  .rules {
+    border-radius: 20px;
+    padding: 25px 20px;
+    margin: 20px 0;
+
+    .rule {
+      display: flex;
+      align-items: center;
+      text-align: left;
+      margin: 20px 0;
+      padding: 15px;
+      background: rgba(46, 204, 113, 0.1);
+      border-radius: 15px;
+      border-left: 4px solid var(--ion-color-success);
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateX(5px);
+        background: rgba(46, 204, 113, 0.15);
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
+      }
+
+      ion-icon {
+        font-size: 2.5rem;
+        margin-right: 15px;
+        color: var(--ion-color-success);
+        margin-top: 0;
+        animation: none;
+        opacity: 1;
+        min-width: 45px;
+      }
+
+      p {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.4;
+        font-weight: 500;
+        color: var(--ion-text-color-light);
+        padding: 0;
+        background: none;
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        backdrop-filter: none;
+      }
+    }
+  }
+
+  // Ready text styling
+  .ready-text {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(39, 174, 96, 0.2));
+    border: 2px solid var(--ion-color-success);
+    border-radius: 20px;
+    padding: 25px;
+    margin: 30px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ion-text-color-light);
+    position: relative;
+    animation: celebrationGlow 2s ease-in-out infinite alternate;
+    
+  }
+
+  // Navigation icon styling
+  ion-icon[name="caret-forward-circle-outline"] {
+    font-size: 6rem;
+    color: var(--ion-color-success);
+    margin-top: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: pulse 2s ease-in-out infinite;
+    
+    &:hover {
+      transform: scale(1.1);
+      color: var(--ion-color-success-shade);
+    }
+  }
+}
+
+// Additional animations
+@keyframes celebrationGlow {
+  0% {
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(46, 204, 113, 0.6);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+
+// Responsive design for onboarding
+@media (max-width: 768px) {
+  #onboarding-container {
+    top: 2%;
+    height: 96%;
+    padding: 0 15px;
+
+    img {
+      max-width: 70%;
+      margin-bottom: 15px;
+    }
+
+    p:first-of-type {
+      padding: 15px;
+      font-size: 1rem;
+      margin: 15px 0 25px 0;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      margin: 30px 0 20px 0;
+    }
+
+    .rules {
+      padding: 20px 15px;
+      margin: 15px 0;
+
+      .rule {
+        margin: 15px 0;
+        padding: 12px;
+
+        ion-icon {
+          font-size: 2rem;
+          margin-right: 12px;
+        }
+
+        p {
+          font-size: 0.95rem;
+        }
+      }
+    }
+
+    .ready-text {
+      padding: 20px;
+      margin: 25px 0;
+      font-size: 1.1rem;
+    }
+
+    ion-icon[name="caret-forward-circle-outline"] {
+      font-size: 5rem;
+    }
+  }
+}
+
+// Dark mode support for onboarding
+@media (prefers-color-scheme: dark) {
+  #onboarding-container {
+    p:first-of-type {
+      color: #ecf0f1;
+    }
+
+    .rules {
+
+      .rule {
+        background: rgba(46, 204, 113, 0.2);
+        
+        &:hover {
+          background: rgba(46, 204, 113, 0.25);
+        }
+
+        p {
+          color: #ecf0f1;
+        }
+      }
+    }
+
+    .ready-text {
+      background: linear-gradient(135deg, rgba(46, 204, 113, 0.3), rgba(39, 174, 96, 0.3));
+    }
+  }
+}
+
+// Animation keyframes
+@keyframes handwriteWord {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(10px) rotate(-2deg);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1) translateY(-2px) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes inkFlow {
+  0% {
+    width: 0;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0;
+  }
+}
+
+// Enhanced paper texture for handwriting
+.explanation-text::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: -1;
+}
+
+// Natural handwriting variations
+.word:nth-child(odd) {
+  transform: rotate(0.2deg);
+}
+
+.word:nth-child(even) {
+  transform: rotate(-0.1deg);
+}
+
+.word:nth-child(3n) {
+  transform: rotate(0.3deg);
+}
+
+// Responsive handwriting
+@media (max-width: 768px) {
+  .explanation-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    padding: 15px 20px 15px 60px;
+    margin: 15px;
+  }
+  
+  .word {
+    margin-right: 0.2em;
+    animation-duration: 0.4s;
+    
+    &::after {
+      animation-duration: 0.3s;
+    }
+  }
+  
+  // Faster animation on mobile - reduce all delays by 60%
+  .writing-line:nth-child(1) .word { animation-delay: calc(var(--delay, 1s) * 0.6); }
+  .writing-line:nth-child(2) .word { animation-delay: calc(var(--delay, 4s) * 0.6); }
+  .writing-line:nth-child(3) .word { animation-delay: calc(var(--delay, 7.5s) * 0.6); }
+  .writing-line:nth-child(4) .word { animation-delay: calc(var(--delay, 14s) * 0.6); }
+}
+
+// Dark mode handwriting
+@media (prefers-color-scheme: dark) {
+  .explanation-text {
+    color: #ecf0f1;
+    
+    text-shadow: 
+      0.5px 0.5px 0px rgba(255, 255, 255, 0.1),
+      1px 1px 0px rgba(255, 255, 255, 0.05);
+  }
+  
+  .word::after {
+    background: linear-gradient(90deg, #f39c12, transparent);
+  }
+}
+
+// Accessibility - reduce motion
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    
+    &::after {
+      animation: none !important;
+      display: none;
+    }
+  }
+}
+
+// Special handwriting effects for punctuation
+.word:contains("!"), .word:contains("?"), .word:contains(".") {
+  animation-duration: 0.8s;
+  
+  &::after {
+    height: 3px;
+    background: linear-gradient(90deg, #e74c3c, #c0392b, transparent);
+  }
+}
+
+
+
+
+ion-icon {
+  font-size: 8rem;
+  margin-top: 20px;
+  opacity: 0;
+  animation: fadeIn 2s ease-in forwards;
+  animation-delay: 2s;
+}
+
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes logoFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

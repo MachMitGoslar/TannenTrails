@@ -1,0 +1,262 @@
+@import url('https://unpkg.com/leaflet@1.7.1/dist/leaflet.css');
+
+// Hero Container Styling
+#hero-container {
+  position: relative;
+  background: linear-gradient(135deg, var(--ion-color-primary-shade) 0%, var(--ion-color-primary-tint) 100%);
+  padding: 40px 20px 10px;
+  //height: 30vh;
+  text-align: center;
+  overflow: hidden;
+  margin-bottom: 20px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.2) 100%);
+    transform: rotate(25deg);
+    animation: heroShimmer 6s infinite;
+    pointer-events: none;
+  }
+  
+  
+
+  img {
+    position: relative;
+    z-index: 3;
+    max-width: 280px;
+    width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+    //animation: logoFloat 3s ease-in-out infinite;
+    
+    // Enhance logo visibility
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  h2 {
+    position: relative;
+    z-index: 3;
+    color: white;
+    font-size: 1.7rem;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1px;
+    animation: titleSlideUp 1s ease-out 0.5s both;
+    
+    
+    &::after {
+      animation-delay: -2s;
+    }
+  }
+}
+  // Map Container
+// Map Container
+.map-container {
+  margin: 0 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  position: relative;
+  animation: mapSlideIn 0.4s ease-out 0.5s both;
+
+  
+  &::after,
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+    z-index: 1000;
+  }
+  
+  #map {
+    height: 60vh;
+    width: 100% !important;
+    border-radius: 0 0 16px 16px;
+  }
+}
+
+// Animations
+@keyframes heroShimmer {
+  0%, 100% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  50% {
+    transform: translateX(200%) rotate(45deg);
+  }
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.02);
+  }
+}
+
+@keyframes titleSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mapSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes treeSwing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes floatAndRotate {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translateY(-20px) rotate(90deg);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-15px) rotate(180deg);
+    opacity: 0.4;
+  }
+  75% {
+    transform: translateY(-25px) rotate(270deg);
+    opacity: 0.7;
+  }
+}
+
+// Responsive Design
+@media (min-width: 768px) {
+  #hero-container {
+    padding: 60px 40px 80px;
+    
+    img {
+      max-width: 320px;
+      margin-bottom: 30px;
+    }
+    
+    h2 {
+      font-size: 2.2rem;
+      letter-spacing: 2px;
+    }
+  }
+  
+  .map-container {
+    margin: 0 24px;
+    
+    #map {
+      height: 600px !important;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  #hero-container {
+    padding: 30px 15px 40px;
+    
+    img {
+      max-width: 240px;
+      padding: 15px;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+      letter-spacing: 0.5px;
+      
+      &::before,
+      &::after {
+        margin: 0 10px;
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  #hero-container {
+    background: linear-gradient(135deg, var(--ion-color-primary-shade) 0%, var(--ion-color-primary-tint) 100%);
+    
+    img {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    h2 {
+      color: #e2e8f0;
+      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+    }
+  }
+  
+  .map-container {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    
+    &::after,
+    &::before {
+      background: linear-gradient(90deg, #4299e1, #805ad5, #4299e1);
+    }
+  }
+}
+
+// Accessibility
+@media (prefers-reduced-motion: reduce) {
+  #hero-container {
+    &::after {
+      animation: none;
+    }
+    
+    img {
+      animation: none;
+    }
+    
+    h2 {
+      animation: none;
+      
+      &::before,
+      &::after {
+        animation: none;
+      }
+    }
+    
+    .floating-elements .leaf {
+      animation: none;
+    }
+  }
+}

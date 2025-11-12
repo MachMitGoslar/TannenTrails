@@ -1,0 +1,76 @@
+
+
+<ion-content [fullscreen]="true" color="primary">
+  <ion-header collapse="condense">
+    <ion-toolbar color="secondary">
+      <ion-title size="large">TannenTrails - Walderlebnisweg Goslar</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  @if(step === 'intro') {
+    <div id="intro-container">
+      <img src="assets/logos/Stadtforst Goslar_Logo_Aller_Slogan_Negativ_ohne Subline.png" alt="Ionic logo" />
+      <h2> - Walderlebnispfad Goslar -</h2>
+      <p>
+        Willkommen zum TannenTrail Walderlebnispfad in Goslar!<br /><br />
+        Tauche ein in die faszinierende Welt des Waldes und entdecke spannende Stationen, die dein Wissen über die Natur erweitern.<br /><br />
+        Bist du bereit für ein unvergessliches Abenteuer? Dann starte jetzt deine Reise durch den Wald und erlebe die Schönheit der Natur hautnah!
+      </p>
+            <ion-icon name="caret-forward-circle-outline" color="light" (click)="setStep('explanation')"></ion-icon>
+
+    </div>
+  }
+
+  @if(step === 'explanation') {
+    <div id="explanation-container">
+      <img src="assets/fox.svg" alt="Foxi" />
+      <p class="explanation-text">
+        Hey! Ich bin Fuchsi, dein Begleiter auf dem TannenTrail Walderlebnispfad in Goslar!<br /><br />
+        Gemeinsam werden wir spannende Stationen entdecken, Rätsel lösen und die Geheimnisse des Waldes lüften.<br /><br />
+        Die Karte begleitet dich auf dem TannenTrail - dem Walderlebnispfad in Goslar. Sie zeigt dir den Weg zu den verschiedenen Stationen und hilft dir, deinen Standort im Wald zu bestimmen.<br /><br />
+        Bist du bereit, mit mir auf Entdeckungsreise zu gehen? Dann lass uns gemeinsam den TannenTrail erkunden und die Wunder des Waldes erleben!
+      </p>
+
+            <ion-icon name="caret-forward-circle-outline" color="light" (click)="setStep('onboarding')"></ion-icon>
+
+    </div>
+  }
+
+  @if(step === 'onboarding') {
+    <div id="onboarding-container">
+      <img src="assets/fox.svg" alt="Foxi" />
+     @if(!navigation_allowed) {
+      <p> Damit du uns auf der Karte entdecken kannst, muss dein Gerät deinen Standort freigeben. Außer dir bekommt keiner diese Informationen</p>
+      <button ion-button color="secondary" (click)="checkNavigationAllowed(true)" >
+        Standort freigeben
+      </button>
+    }
+      <h3> Für den Schutz meines Waldes halte dich bitte an folgende Regeln:</h3>
+      <div class="rules">
+        <div class="rule">
+          <ion-icon name="leaf-outline"></ion-icon>
+          <p>1. Bleibe auf den markierten Wegen.</p>
+        </div>
+        <div class="rule">
+          <ion-icon name="paw-outline"></ion-icon>
+          <p>2. Störe die Tierwelt nicht.</p>
+        </div>
+        <div class="rule">
+          <ion-icon name="trash-outline"></ion-icon>
+          <p>3. Nimm deinen Müll wieder mit.</p>
+        </div>
+      </div>
+
+      @if(navigation_allowed) {
+        <p class="ready-text">
+          Super! Du bist jetzt bereit, den TannenTrail Walderlebnispfad in Goslar zu erkunden. Viel Spaß bei deinem Abenteuer im Wald!
+        </p>
+             <ion-icon (click)="navigateToMap()" name="caret-forward-circle-outline" color="light"></ion-icon>
+
+      }
+
+
+    </div>
+  }
+  <!-- <app-overview></app-overview> -->
+</ion-content>

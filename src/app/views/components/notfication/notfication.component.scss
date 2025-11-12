@@ -1,0 +1,278 @@
+.notification-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  pointer-events: none;
+  padding: 16px;
+}
+
+.notification-container {
+  pointer-events: auto;
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: all 0.3s ease-out;
+
+  &.notification-success {
+    --notification-color: var(--ion-color-success);
+    --notification-bg: linear-gradient(135deg, var(--ion-color-success-tint), #c3e6cb 100%);
+    --notification-border: #b8dacd;
+    --icon-color: var(--ion-text-color-success);
+    --text-color: var(--ion-text-color-success);
+  }
+
+  &.notification-warning {
+    --notification-color: var(--ion-color-warning);
+    --notification-bg: linear-gradient(135deg, var(--ion-color-warning-tint), #ffeaa7 100%);
+    --notification-border: #fce89d;
+    --icon-color: var(--ion-text-color-warning);
+    --text-color: var(--ion-text-color-warning);
+  }
+
+  &.notification-error {
+    --notification-color: var(--ion-color-danger);
+    --notification-bg: linear-gradient(135deg, var(--ion-color-danger-tint), #f1aeb5 100%);
+    --notification-border: var(--ion-color-danger);
+    --icon-color: var(--ion-text-color-danger);
+    --text-color: var(--ion-text-color-danger);
+  }
+}
+
+.notification-card {
+  margin: 0;
+  border-radius: 16px;
+  background: var(--notification-bg);
+  border-left: 4px solid var(--notification-color);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 16px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg, 
+      transparent 0%, 
+      var(--notification-color) 50%, 
+      transparent 100%
+    );
+  }
+}
+
+.notification-content {
+  padding: 0;
+  margin: 0;
+}
+
+.notification-header {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+  gap: 12px;
+}
+
+.icon-section {
+  flex-shrink: 0;
+
+  .notification-icon {
+    font-size: 28px;
+    color: var(--icon-color);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    animation: iconBounce 0.6s ease-out;
+  }
+}
+
+.text-section {
+  flex: 1;
+  min-width: 0; // Prevents text overflow
+
+  .notification-title {
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    line-height: 1.3;
+  }
+
+  .notification-message {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    opacity: 0.8;
+    line-height: 1.4;
+    word-wrap: break-word;
+  }
+}
+
+.actions-section {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+
+  .action-button {
+    --color: var(--notification-color);
+    --color-hover: var(--notification-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    height: auto;
+    padding: 8px 12px;
+
+    &:hover {
+      --background: rgba(var(--notification-color-rgb), 0.1);
+    }
+  }
+
+  .close-button {
+    --color: var(--text-color);
+    --color-hover: var(--text-color);
+    height: auto;
+    width: auto;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 50%;
+
+    ion-icon {
+      font-size: 18px;
+    }
+
+    &:hover {
+      --background: rgba(0, 0, 0, 0.05);
+    }
+  }
+}
+
+// Progress bar for auto-hide
+.progress-bar {
+  height: 3px;
+  background: var(--notification-color);
+  width: 100%;
+  transform-origin: left;
+  animation: progressShrink linear forwards;
+  opacity: 0.6;
+}
+
+// Animations
+@keyframes iconBounce {
+  0% {
+    transform: scale(0.3) rotate(-15deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotate(0deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes progressShrink {
+  0% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+
+// Hover effects
+.notification-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-out;
+}
+
+// Responsive design
+@media (max-width: 480px) {
+  .notification-wrapper {
+    padding: 8px;
+  }
+
+  .notification-header {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .icon-section .notification-icon {
+    font-size: 24px;
+  }
+
+  .text-section {
+    .notification-title {
+      font-size: 1rem;
+    }
+
+    .notification-message {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .notification-container {
+    &.notification-success {
+      --notification-bg: linear-gradient(135deg, var(--ion-color-success-tint) 0%, var(--ion-color-success) 100%);
+      --icon-color: #4ade80;
+      --text-color: #bbf7d0;
+    }
+
+    &.notification-warning {
+      --notification-bg: linear-gradient(135deg, var(--ion-color-warning-tint) 0%, var(--ion-color-warning) 100%);
+      --icon-color: #fbbf24;
+      --text-color: #fef3c7;
+    }
+
+    &.notification-error {
+      --notification-bg: linear-gradient(135deg, var(--ion-color-danger-tint) 0%, var(--ion-color-danger) 100%);
+      --icon-color: #f87171;
+      --text-color: #fecaca;
+    }
+  }
+
+  .notification-card {
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 2px 16px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Accessibility enhancements
+@media (prefers-reduced-motion: reduce) {
+  .notification-container {
+    transition: none;
+  }
+
+  .notification-icon {
+    animation: none;
+  }
+
+  .progress-bar {
+    animation-duration: 0s !important;
+  }
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .notification-card {
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--notification-color);
+  }
+
+  .notification-title,
+  .notification-message {
+    font-weight: bold;
+  }
+}

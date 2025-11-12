@@ -1,0 +1,12 @@
+<!-- Star Explosion Animation -->
+@if (showStars) {
+  <div class="star-explosion">
+    @for(star of stars; track star.id) {
+      <ion-icon 
+        name="star" 
+        [ngStyle]="star.style"
+        class="explosion-star">
+      </ion-icon>
+    }
+  </div>
+}
