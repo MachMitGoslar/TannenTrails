@@ -12,23 +12,25 @@
           </div>
           <div class="actions-section">
             <!-- Action Button -->
-            <ion-button 
+            <ion-button
               *ngIf="config.actionButton"
-              fill="clear" 
+              fill="clear"
               size="small"
               class="action-button"
-              (click)="onActionClick()">
+              (click)="onActionClick()"
+            >
               {{ config.actionButton.text }}
               <ion-ripple-effect></ion-ripple-effect>
             </ion-button>
-            
+
             <!-- Close Button -->
-            <ion-button 
+            <ion-button
               *ngIf="config.showCloseButton !== false"
-              fill="clear" 
+              fill="clear"
               size="small"
               class="close-button"
-              (click)="dismiss()">
+              (click)="dismiss()"
+            >
               <ion-icon name="close" slot="icon-only"></ion-icon>
               <ion-ripple-effect></ion-ripple-effect>
             </ion-button>
@@ -36,11 +38,11 @@
         </div>
 
         <!-- Progress bar for auto-hide notifications -->
-        <div 
-          *ngIf="config.duration && config.duration > 0" 
+        <div
+          *ngIf="config.duration && config.duration > 0"
           class="progress-bar"
-          [style.animation-duration.ms]="config.duration">
-        </div>
+          [style.animation-duration.ms]="config.duration"
+        ></div>
       </ion-card-content>
     </ion-card>
   </div>

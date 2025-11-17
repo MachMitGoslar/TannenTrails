@@ -1,0 +1,347 @@
+name: 'Pull Request zu Main Branch'
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize, reopened, ready_for_review ]
+
+env:
+  NODE_VERSION: '20'
+  IONIC_CLI_VERSION: 'latest'
+
+jobs:
+  # Job 1: Code Quality & Linting
+  code-quality:
+    name: 'Code Qualität & Linting'
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: 'Repository auschecken'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 'Node.js einrichten'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 'Dependencies installieren'
+        run: npm ci
+
+      - name: 'ESLint Prüfung'
+        run: npm run lint
+
+      - name: 'TypeScript Kompilierung prüfen'
+        run: npx tsc --noEmit
+
+      - name: 'Code-Style Probleme kommentieren'
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Code Quality Issues gefunden!**\n\nBitte prüfe die Lint-Ergebnisse und behebe die gefundenen Probleme vor dem Merge.'
+            })
+
+  # Job 2: Tests ausführen
+  tests:
+    name: 'Unit Tests'
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: 'Repository auschecken'
+        uses: actions/checkout@v4
+
+      - name: 'Node.js einrichten'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 'Dependencies installieren'
+        run: npm ci
+
+      - name: 'Unit Tests ausführen'
+        run: npm test -- --watch=false --browsers=ChromeHeadless --code-coverage
+
+      - name: 'Test Coverage Report hochladen'
+        uses: codecov/codecov-action@v3
+        if: success()
+        with:
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+  # Job 3: Build Tests
+  build:
+    name: 'Build Tests'
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    strategy:
+      matrix:
+        build-target: [ 'web', 'android' ]
+
+    steps:
+      - name: 'Repository auschecken'
+        uses: actions/checkout@v4
+
+      - name: 'Node.js einrichten'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 'Ionic CLI installieren'
+        run: npm install -g @ionic/cli@${{ env.IONIC_CLI_VERSION }}
+
+      - name: 'Dependencies installieren'
+        run: npm ci
+
+      - name: 'Web Build testen'
+        if: matrix.build-target == 'web'
+        run: |
+          ionic build --prod
+          echo "✅ Web Build erfolgreich"
+
+      - name: 'Android Build vorbereiten'
+        if: matrix.build-target == 'android'
+        run: |
+          ionic cap add android --confirm
+          ionic cap sync android
+          echo "✅ Android Build Vorbereitung erfolgreich"
+
+      - name: 'Build Artefakte hochladen'
+        if: matrix.build-target == 'web'
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build-${{ github.sha }}
+          path: dist/
+          retention-days: 7
+
+  # Job 4: Sicherheitsprüfung
+  security:
+    name: 'Sicherheitsprüfung'
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: 'Repository auschecken'
+        uses: actions/checkout@v4
+
+      - name: 'Node.js einrichten'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 'NPM Security Audit'
+        run: npm audit --audit-level=moderate
+
+      - name: 'Dependency Check'
+        run: |
+          npx audit-ci --moderate
+        continue-on-error: true
+
+  # Job 5: Performance & Bundle Size Check
+  bundle-analysis:
+    name: 'Bundle Size Analyse'
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: 'Repository auschecken'
+        uses: actions/checkout@v4
+
+      - name: 'Node.js einrichten'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 'Dependencies installieren'
+        run: npm ci
+
+      - name: 'Production Build für Analyse'
+        run: npm run build -- --prod --stats-json
+
+      - name: 'Bundle Size analysieren'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './dist/stats.json';
+            
+            if (fs.existsSync(path)) {
+              const stats = JSON.parse(fs.readFileSync(path, 'utf8'));
+              const totalSize = stats.assets.reduce((acc, asset) => acc + asset.size, 0);
+              const sizeInMB = (totalSize / 1024 / 1024).toFixed(2);
+              
+              const comment = `📊 **Bundle Size Analyse**\n\n` +
+                `- Gesamt Bundle Size: **${sizeInMB} MB**\n` +
+                `- Anzahl Assets: **${stats.assets.length}**\n\n` +
+                `${sizeInMB > 5 ? '⚠️ Bundle Size ist relativ groß. Überprüfe Optimierungsmöglichkeiten.' : '✅ Bundle Size ist in Ordnung.'}`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+
+  # Job 6: Zusammenfassung
+  pr-summary:
+    name: 'PR Zusammenfassung'
+    runs-on: ubuntu-latest
+    if: always() && github.event.pull_request.draft == false
+    needs: [ code-quality, tests, build, security, bundle-analysis ]
+
+    steps:
+      - name: 'PR Status zusammenfassen'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const jobs = [
+              { name: 'Code Quality', status: '${{ needs.code-quality.result }}' },
+              { name: 'Tests', status: '${{ needs.tests.result }}' },
+              { name: 'Build', status: '${{ needs.build.result }}' },
+              { name: 'Security', status: '${{ needs.security.result }}' },
+              { name: 'Bundle Analysis', status: '${{ needs.bundle-analysis.result }}' }
+            ];
+            
+            const getEmoji = (status) => {
+              switch(status) {
+                case 'success': return '✅';
+                case 'failure': return '❌';
+                case 'cancelled': return '🚫';
+                case 'skipped': return '⏭️';
+                default: return '⏳';
+              }
+            };
+            
+            const allPassed = jobs.every(job => job.status === 'success');
+            const hasFailures = jobs.some(job => job.status === 'failure');
+            
+            let summary = `## 🚀 Pull Request Qualitätsprüfung\n\n`;
+            
+            jobs.forEach(job => {
+              summary += `${getEmoji(job.status)} **${job.name}**: ${job.status}\n`;
+            });
+            
+            if (allPassed) {
+              summary += `\n🎉 **Alle Prüfungen bestanden!** Dieser PR ist bereit für den Merge.`;
+            } else if (hasFailures) {
+              summary += `\n⚠️ **Einige Prüfungen fehlgeschlagen.** Bitte behebe die Probleme vor dem Merge.`;
+            } else {
+              summary += `\n⏳ **Prüfungen laufen noch oder wurden übersprungen.**`;
+            }
+            
+            // Bestehende Kommentare des Bots finden und aktualisieren oder neuen erstellen
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Pull Request Qualitätsprüfung')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: summary
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: summary
+              });
+            }
+
+  # Job 7: Auto-Assign Reviewers
+  assign-reviewers:
+    name: 'Reviewer zuweisen'
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened'
+
+    steps:
+      - name: 'Automatische Reviewer-Zuweisung'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Liste möglicher Reviewer (anpassen nach Team)
+            const reviewers = ['your-username']; // Hier deine GitHub-Nutzernamen eintragen
+            
+            if (reviewers.length > 0 && !reviewers.includes(context.payload.pull_request.user.login)) {
+              await github.rest.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_request_number: context.issue.number,
+                reviewers: reviewers.filter(reviewer => reviewer !== context.payload.pull_request.user.login)
+              });
+            }
+
+  # Job 8: Labels setzen
+  label-management:
+    name: 'Labels verwalten'
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened' || github.event.action == 'synchronize'
+
+    steps:
+      - name: 'Repository auschecken'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 'Automatische Label-Zuweisung'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_request_number: context.issue.number,
+            });
+            
+            const labels = [];
+            
+            // Label basierend auf geänderten Dateien
+            const hasServiceChanges = files.some(file => file.filename.includes('service'));
+            const hasComponentChanges = files.some(file => file.filename.includes('component'));
+            const hasStyleChanges = files.some(file => file.filename.includes('.scss'));
+            const hasTestChanges = files.some(file => file.filename.includes('.spec.ts'));
+            const hasDocsChanges = files.some(file => file.filename.includes('README'));
+            
+            if (hasServiceChanges) labels.push('service');
+            if (hasComponentChanges) labels.push('component');
+            if (hasStyleChanges) labels.push('styling');
+            if (hasTestChanges) labels.push('tests');
+            if (hasDocsChanges) labels.push('documentation');
+            
+            // PR Größe Label
+            const changedLines = files.reduce((acc, file) => acc + file.additions + file.deletions, 0);
+            if (changedLines < 50) labels.push('size: small');
+            else if (changedLines < 200) labels.push('size: medium');
+            else labels.push('size: large');
+            
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labels
+              });
+            }

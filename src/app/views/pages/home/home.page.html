@@ -1,75 +1,125 @@
-
-
 <ion-content [fullscreen]="true" color="primary">
-  <ion-header collapse="condense">
-    <ion-toolbar color="secondary">
-      <ion-title size="large">TannenTrails - Walderlebnisweg Goslar</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  @if(step === 'intro') {
+  @if (step === 'intro') {
     <div id="intro-container">
-      <img src="assets/logos/Stadtforst Goslar_Logo_Aller_Slogan_Negativ_ohne Subline.png" alt="Ionic logo" />
-      <h2> - Walderlebnispfad Goslar -</h2>
+      <img
+        src="assets/logos/Stadtforst Goslar_Logo_Aller_Slogan_Negativ_ohne Subline.png"
+        alt="Ionic logo"
+      />
+      <h2>- Stadtwald-Quiz -</h2>
       <p>
-        Willkommen zum TannenTrail Walderlebnispfad in Goslar!<br /><br />
-        Tauche ein in die faszinierende Welt des Waldes und entdecke spannende Stationen, die dein Wissen über die Natur erweitern.<br /><br />
-        Bist du bereit für ein unvergessliches Abenteuer? Dann starte jetzt deine Reise durch den Wald und erlebe die Schönheit der Natur hautnah!
+        Willkommen auf dem Walderlebnispfad in Goslar!<br /><br />
+        Tauche ein in die faszinierende Welt des Waldes und entdecke spannende Stationen, die dein
+        Wissen über die Natur erweitern.<br /><br />
+        Bist du bereit für ein unvergessliches Abenteuer? Dann starte jetzt deine Reise durch den
+        Wald und erlebe die Schönheit der Natur hautnah!
       </p>
-            <ion-icon name="caret-forward-circle-outline" color="light" (click)="setStep('explanation')"></ion-icon>
-
+      <ion-icon
+        name="caret-forward-circle-outline"
+        color="light"
+        (click)="setStep('explanation')"
+      ></ion-icon>
     </div>
   }
 
-  @if(step === 'explanation') {
+  @if (step === 'explanation') {
     <div id="explanation-container">
-      <img src="assets/fox.svg" alt="Foxi" />
-      <p class="explanation-text">
-        Hey! Ich bin Fuchsi, dein Begleiter auf dem TannenTrail Walderlebnispfad in Goslar!<br /><br />
-        Gemeinsam werden wir spannende Stationen entdecken, Rätsel lösen und die Geheimnisse des Waldes lüften.<br /><br />
-        Die Karte begleitet dich auf dem TannenTrail - dem Walderlebnispfad in Goslar. Sie zeigt dir den Weg zu den verschiedenen Stationen und hilft dir, deinen Standort im Wald zu bestimmen.<br /><br />
-        Bist du bereit, mit mir auf Entdeckungsreise zu gehen? Dann lass uns gemeinsam den TannenTrail erkunden und die Wunder des Waldes erleben!
-      </p>
-
-            <ion-icon name="caret-forward-circle-outline" color="light" (click)="setStep('onboarding')"></ion-icon>
-
+      <ion-grid>
+        <ion-row>
+          <ion-col size-md="4" size="12" class="ion-text-center flex ion-align-content-center">
+            <img src="assets/fox.svg" alt="Foxi" />
+          </ion-col>
+          <ion-col size="12" size-md="8">
+            <p class="explanation-text">
+              Hey! Ich bin Fritzi, dein Begleiter auf dem Walderlebnispfad in Goslar!<br /><br />
+              Gemeinsam werden wir spannende Stationen entdecken, Rätsel lösen und die Geheimnisse
+              des Waldes lüften.<br /><br />
+              Die Karte begleitet dich auf dem Walderlebnispfad in Goslar. Sie zeigt dir den Weg zu
+              den verschiedenen Stationen und hilft dir, deinen Standort im Wald zu bestimmen.<br /><br />
+              Bist du bereit, mit mir auf Entdeckungsreise zu gehen? Dann lass uns gemeinsam den
+              Walderlebnispfad erkunden und die Wunder des Waldes erleben!
+            </p>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col class="ion-text-center">
+            <ion-icon
+              name="caret-forward-circle-outline"
+              color="light"
+              (click)="setStep('onboarding')"
+            ></ion-icon>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
     </div>
   }
 
-  @if(step === 'onboarding') {
-    <div id="onboarding-container">
-      <img src="assets/fox.svg" alt="Foxi" />
-     @if(!(navigation_allowed | async)) {
-      <p> Damit du uns auf der Karte entdecken kannst, muss dein Gerät deinen Standort freigeben. Außer dir bekommt keiner diese Informationen</p>
-      <button ion-button color="secondary" (click)="checkNavigationAllowed()" >
-        Standort freigeben
-      </button>
-    }
-      <h3> Für den Schutz meines Waldes halte dich bitte an folgende Regeln:</h3>
-      <div class="rules">
-        <div class="rule">
-          <ion-icon name="leaf-outline"></ion-icon>
-          <p>1. Bleibe auf den markierten Wegen.</p>
-        </div>
-        <div class="rule">
-          <ion-icon name="paw-outline"></ion-icon>
-          <p>2. Störe die Tierwelt nicht.</p>
-        </div>
-        <div class="rule">
-          <ion-icon name="trash-outline"></ion-icon>
-          <p>3. Nimm deinen Müll wieder mit.</p>
-        </div>
-      </div>
-
-      @if(navigation_allowed) {
-        <p class="ready-text">
-          Super! Du bist jetzt bereit, den TannenTrail Walderlebnispfad in Goslar zu erkunden. Viel Spaß bei deinem Abenteuer im Wald!
-        </p>
-             <ion-icon (click)="navigateToMap()" name="caret-forward-circle-outline" color="light"></ion-icon>
-
-      }
-
-
+  @if (step === 'onboarding') {
+    <div id="onboarding-container" class="ion-flex-auto flex ion-align-content-center">
+      <ion-grid>
+        <ion-row class="">
+          <ion-col size="12" size-sm="4" class="ion-text-center">
+            <img src="assets/fox_profile.svg" alt="Foxi" />
+            <h3>Fast geschaft</h3>
+          </ion-col>
+          @if ((navigation_allowed | async) === false) {
+            <ion-col size="12" size-sm="8">
+              <p>
+                Damit du uns auf der Karte entdecken kannst, muss dein Gerät deinen Standort
+                freigeben. Außer dir bekommt keiner diese Informationen
+              </p>
+              <button ion-button color="secondary" (click)="checkNavigationAllowed()">
+                Standort freigeben
+              </button>
+            </ion-col>
+          } @else {
+            <ion-col size="12" size-sm="8" class="ion-text-center">
+              @if (!allRulesAcknowledged()) {
+                <h3>Für den Schutz meines Waldes halte dich bitte an folgende Regeln:</h3>
+                <div class="rules">
+                  <ion-item
+                    class="rule"
+                    [class.acknowledged]="acknowledgedRules[0]"
+                    (click)="acknowledgeRule(0)"
+                  >
+                    <ion-radio slot="start" [value]="acknowledgedRules[0]"></ion-radio>
+                    <ion-label>Bleibe auf den markierten Wegen.</ion-label>
+                    <ion-icon name="leaf-outline"></ion-icon>
+                  </ion-item>
+                  <ion-item
+                    class="rule"
+                    [class.acknowledged]="acknowledgedRules[1]"
+                    (click)="acknowledgeRule(1)"
+                  >
+                    <ion-radio slot="start" [value]="acknowledgedRules[1]"></ion-radio>
+                    <ion-label>Störe die Tierwelt nicht.</ion-label>
+                    <ion-icon name="paw-outline"></ion-icon>
+                  </ion-item>
+                  <ion-item
+                    class="rule"
+                    [class.acknowledged]="acknowledgedRules[2]"
+                    (click)="acknowledgeRule(2)"
+                  >
+                    <ion-radio slot="start" [value]="acknowledgedRules[2]"></ion-radio>
+                    <ion-label>Nimm deinen Müll wieder mit.</ion-label>
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </ion-item>
+                </div>
+              }
+              @if ((navigation_allowed | async) && allRulesAcknowledged()) {
+                <p class="ready-text">
+                  Super! Du bist jetzt bereit, den Walderlebnispfad in Goslar zu erkunden. Viel Spaß
+                  bei deinem Abenteuer im Wald!
+                </p>
+                <ion-icon
+                  (click)="navigateToMap()"
+                  name="caret-forward-circle-outline"
+                  color="light"
+                ></ion-icon>
+              }
+            </ion-col>
+          }
+        </ion-row>
+      </ion-grid>
     </div>
   }
   <!-- <app-overview></app-overview> -->

@@ -1,10 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   IonHeader,
   IonToolbar,
   IonTitle,
   IonContent,
-  IonIcon, IonButton, IonRouterLink } from '@ionic/angular/standalone';
+  IonIcon,
+  IonButton,
+  IonRouterLink,
+  IonGrid,
+  IonCol,
+  IonRow,
+  IonItem,
+  IonRadio,
+  IonLabel,
+  IonList,
+} from '@ionic/angular/standalone';
 import { LocationService } from 'src/app/core/services/location-service';
 import { Router, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -15,27 +25,31 @@ import { from, Observable, of } from 'rxjs';
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  imports: [ 
+  imports: [
+    IonList,
+    IonLabel,
+    IonRadio,
+    IonItem,
+    IonRow,
+    IonCol,
+    IonGrid,
     IonIcon,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonContent,
     IonIcon,
     CommonModule,
-],
+  ],
 })
-
 export class HomePage {
+  acknowledgedRules = [false, false, false];
 
   step: 'intro' | 'explanation' | 'onboarding' = 'intro';
   navigation_allowed: Observable<boolean> = of(false);
-  
-  constructor(
-    private locationService: LocationService,
-    public router: Router,
-    public notificationService: NotificationService
-  ) {
+
+  private locationService = inject(LocationService);
+  public router = inject(Router);
+  public notificationService = inject(NotificationService);
+
+  constructor() {
     // Icons are now preloaded in AppComponent
   }
 
@@ -44,10 +58,18 @@ export class HomePage {
   }
 
   checkNavigationAllowed() {
-    this.navigation_allowed = this.locationService.checkPermissionStatus()
+    this.navigation_allowed = this.locationService.checkPermissionStatus();
   }
 
   navigateToMap() {
     this.router.navigate(['/map']);
+  }
+
+  acknowledgeRule(index: number) {
+    this.acknowledgedRules[index] = true;
+  }
+
+  allRulesAcknowledged(): boolean {
+    return this.acknowledgedRules.every(ack => ack);
   }
 }

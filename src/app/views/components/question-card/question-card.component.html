@@ -8,99 +8,144 @@
       </span>
     </ion-card-title>
   </ion-card-header>
-  
+
   <ion-card-content>
     <div class="question-content">
-      <p class="question-text">{{ question.questionText }}</p>
-      
-      <!-- Multiple Choice Question -->
-       @if(question.type === 'multiple-choice') {
-      <div class="multiple-choice">
-        <ion-radio-group [(ngModel)]="selectedAnswer" [disabled]="isAnswered">
-          <ion-item *ngFor="let option of getQuestionOptions(); let i = index" 
-                    lines="none" 
-                    [class.selected]="selectedAnswer === i"
-                    [class.correct-answer]="isAnswered && i === getCorrectOptionIndex() && selectedAnswer === i"
-                    [class.wrong-answer]="isAnswered && selectedAnswer === i && i !== getCorrectOptionIndex()">
-            <ion-radio slot="start" [value]="i" [disabled]="isAnswered"></ion-radio>
-            <ion-label>{{ option }}</ion-label>
-            @if(isAnswered && i === getCorrectOptionIndex() && selectedAnswer === i) {
-              <ion-icon
-                        name="checkmark" 
-                        slot="end" 
-                        color="success"></ion-icon>
-            } 
-            @else if(isAnswered && selectedAnswer === i && i !== getCorrectOptionIndex()) {
-            <ion-icon
-                      name="close" 
-                      slot="end" 
-                      color="danger"></ion-icon>
-            }
-            
-          </ion-item>
-        </ion-radio-group>
+      <!-- Retry Counter -->
+      <div class="retry-counter" *ngIf="attemptsUsed > 0 || isAnswered">
+        <div class="retry-info">
+          <span class="retry-text">
+            <span *ngIf="!isQuestionCompleted">Versuche übrig: {{ retriesLeft }}</span>
+            <span *ngIf="isQuestionCompleted && showResult">✅ Frage erfolgreich beantwortet!</span>
+            <span *ngIf="isQuestionCompleted && !showResult">❌ Keine Versuche mehr übrig</span>
+          </span>
+        </div>
+        <div class="retry-dots">
+          <!-- Used attempts (filled circles) -->
+          <ion-icon
+            *ngFor="let used of getRetryArray(attemptsUsed)"
+            name="ellipse"
+            class="retry-dot used"
+            [color]="showResult ? 'success' : 'danger'"
+          >
+          </ion-icon>
+          <!-- Remaining attempts (outline circles) -->
+          <ion-icon
+            *ngFor="let remaining of getRetryArray(retriesLeft)"
+            name="ellipse-outline"
+            class="retry-dot remaining"
+            color="white"
+          >
+          </ion-icon>
+        </div>
       </div>
-    }
+      <p class="question-text">{{ question.questionText }}</p>
+
+      <!-- Multiple Choice Question -->
+      @if (question.type === 'multiple-choice') {
+        <div class="multiple-choice">
+          <ion-radio-group [(ngModel)]="selectedAnswer" [disabled]="isAnswered">
+            <ion-item
+              *ngFor="let option of getQuestionOptions(); let i = index"
+              lines="none"
+              [class.selected]="selectedAnswer === i"
+              [class.correct-answer]="
+                isAnswered && i === getCorrectOptionIndex() && selectedAnswer === i
+              "
+              [class.wrong-answer]="
+                isAnswered && selectedAnswer === i && i !== getCorrectOptionIndex()
+              "
+            >
+              <ion-radio slot="start" [value]="i" [disabled]="isAnswered"></ion-radio>
+              <ion-label>{{ option }}</ion-label>
+              @if (isAnswered && i === getCorrectOptionIndex() && selectedAnswer === i) {
+                <ion-icon name="checkmark" slot="end" color="success"></ion-icon>
+              } @else if (isAnswered && selectedAnswer === i && i !== getCorrectOptionIndex()) {
+                <ion-icon name="close" slot="end" color="danger"></ion-icon>
+              }
+            </ion-item>
+          </ion-radio-group>
+        </div>
+      }
 
       <!-- True/False Question -->
       <div *ngIf="question.type === 'true-false'" class="true-false">
         <ion-radio-group [(ngModel)]="selectedAnswer" [disabled]="isAnswered">
-          <ion-item lines="none" 
-                    [class.selected]="selectedAnswer === true"
-                    [class.correct-answer]="isAnswered && getCorrectAnswer() === true"
-                    [class.wrong-answer]="isAnswered && selectedAnswer === true && getCorrectAnswer() !== true">
+          <ion-item
+            lines="none"
+            [class.selected]="selectedAnswer === true"
+            [class.correct-answer]="isAnswered && getCorrectAnswer() === true"
+            [class.wrong-answer]="
+              isAnswered && selectedAnswer === true && getCorrectAnswer() !== true
+            "
+          >
             <ion-radio slot="start" [value]="true"></ion-radio>
             <ion-label>Richtig</ion-label>
-            <ion-icon *ngIf="isAnswered && getCorrectAnswer() === true" 
-                      name="checkmark" 
-                      slot="end" 
-                      color="success"></ion-icon>
-            <ion-icon *ngIf="isAnswered && selectedAnswer === true && getCorrectAnswer() !== true" 
-                      name="close" 
-                      slot="end" 
-                      color="danger"></ion-icon>
+            <ion-icon
+              *ngIf="isAnswered && getCorrectAnswer() === true"
+              name="checkmark"
+              slot="end"
+              color="success"
+            ></ion-icon>
+            <ion-icon
+              *ngIf="isAnswered && selectedAnswer === true && getCorrectAnswer() !== true"
+              name="close"
+              slot="end"
+              color="danger"
+            ></ion-icon>
           </ion-item>
-          <ion-item lines="none" 
-                    [class.selected]="selectedAnswer === false"
-                    [class.correct-answer]="isAnswered && getCorrectAnswer() === false"
-                    [class.wrong-answer]="isAnswered && selectedAnswer === false && getCorrectAnswer() !== false">
+          <ion-item
+            lines="none"
+            [class.selected]="selectedAnswer === false"
+            [class.correct-answer]="isAnswered && getCorrectAnswer() === false"
+            [class.wrong-answer]="
+              isAnswered && selectedAnswer === false && getCorrectAnswer() !== false
+            "
+          >
             <ion-radio slot="start" [value]="false"></ion-radio>
             <ion-label>Falsch</ion-label>
-            <ion-icon *ngIf="isAnswered && getCorrectAnswer() === false" 
-                      name="checkmark" 
-                      slot="end" 
-                      color="success"></ion-icon>
-            <ion-icon *ngIf="isAnswered && selectedAnswer === false && getCorrectAnswer() !== false" 
-                      name="close" 
-                      slot="end" 
-                      color="danger"></ion-icon>
+            <ion-icon
+              *ngIf="isAnswered && getCorrectAnswer() === false"
+              name="checkmark"
+              slot="end"
+              color="success"
+            ></ion-icon>
+            <ion-icon
+              *ngIf="isAnswered && selectedAnswer === false && getCorrectAnswer() !== false"
+              name="close"
+              slot="end"
+              color="danger"
+            ></ion-icon>
           </ion-item>
         </ion-radio-group>
       </div>
 
       <!-- Estimation Question -->
       <div *ngIf="question.type === 'estimation'" class="estimation">
-        <ion-item [class.correct-answer]="isAnswered && showResult" 
-                  [class.wrong-answer]="isAnswered && !showResult">
-          <ion-input 
-            type="number" 
+        <ion-item
+          [class.correct-answer]="isAnswered && showResult"
+          [class.wrong-answer]="isAnswered && !showResult"
+        >
+          <ion-input
+            type="number"
             [(ngModel)]="estimationInput"
             [disabled]="isAnswered"
-            placeholder="Gib deine Schätzung ein...">
+            placeholder="Gib deine Schätzung ein..."
+          >
           </ion-input>
-          <ion-icon *ngIf="isAnswered" 
-                    [name]="showResult ? 'checkmark' : 'close'" 
-                    slot="end" 
-                    [color]="showResult ? 'success' : 'danger'"></ion-icon>
+          <ion-icon
+            *ngIf="isAnswered"
+            [name]="showResult ? 'checkmark' : 'close'"
+            slot="end"
+            [color]="showResult ? 'success' : 'danger'"
+          ></ion-icon>
         </ion-item>
-        
+
         <!-- Show correct answer and range for estimation -->
         <div *ngIf="isAnswered" class="estimation-result">
           <p class="correct-value">
             <strong>Richtige Antwort:</strong> {{ getCorrectValue() }}
-            <span *ngIf="getMarginOfError() > 0">
-              (± {{ getMarginOfError() }})
-            </span>
+            <span *ngIf="getMarginOfError() > 0"> (± {{ getMarginOfError() }}) </span>
           </p>
           <p class="your-answer" *ngIf="estimationInput !== null">
             <strong>Deine Antwort:</strong> {{ estimationInput }}
@@ -109,33 +154,60 @@
       </div>
 
       <!-- Submit Button -->
-      <ion-button 
-        expand="block" 
-        [color]="isAnswered ? (showResult ? 'success' : 'danger') : 'primary'" 
-        class="submit-button"
-        [disabled]="!canSubmitAnswer() || isAnswered"
-        (click)="submitAnswer()">
-        <ion-icon 
-          [name]="isAnswered ? (showResult ? 'checkmark-circle' : 'close-circle') : 'checkmark-circle-outline'" 
-          slot="start">
-        </ion-icon>
-        <span *ngIf="!isAnswered">Antwort überprüfen</span>
-        <span *ngIf="isAnswered && showResult">Richtig! Gut gemacht!</span>
-        <span *ngIf="isAnswered && !showResult">Leider falsch. Versuche es nochmal!</span>
-      </ion-button>
+      @if (!isAnswered && question.type !== 'external') {
+        <ion-button expand="block" color="primary" class="submit-button" (click)="submitAnswer()">
+          <ion-icon name="question-mark-circle" slot="start"> </ion-icon>
+          <span> Überprüfen </span>
+        </ion-button>
+      }
 
-      <!-- Reset Button for answered questions -->
-      <ion-button 
-        *ngIf="isAnswered"
-        expand="block" 
-        fill="clear" 
-        color="color-dark-100"
-        class="reset-button"
-        (click)="resetQuestion()">
-        <ion-icon name="refresh" slot="start"></ion-icon>
-        Nochmal versuchen
-      </ion-button>
+      @if (!isAnswered && question.type === 'external') {
+        <ion-button
+          expand="block"
+          color="primary"
+          class="external-button"
+          (click)="finishExternalTask()"
+        >
+          <ion-icon name="checkmark"></ion-icon>Ist erledigt!
+        </ion-button>
+      }
+      @if (isAnswered && retriesLeft > 0 && !isQuestionCompleted) {
+        <ion-button
+          *ngIf="canRetry"
+          expand="block"
+          fill="outline"
+          color="warning"
+          class="reset-button"
+          (click)="resetQuestion()"
+        >
+          <ion-icon name="refresh" slot="start"></ion-icon>
+          <span *ngIf="!isLastAttempt"
+            >Nochmal versuchen ({{ retriesLeft - 1 }} Versuche übrig)</span
+          >
+          <span *ngIf="isLastAttempt">Letzter Versuch!</span>
+        </ion-button>
+      }
 
+      @if (isAnswered && isQuestionCompleted) {
+        <div class="final-result">
+          <div *ngIf="showResult" class="success-message">
+            <ion-icon name="trophy" color="warning"></ion-icon>
+            <p>
+              Großartig! Du hast die Frage
+              {{
+                attemptsUsed === 1 ? 'beim ersten Versuch' : 'nach ' + attemptsUsed + ' Versuchen'
+              }}
+              richtig beantwortet!
+            </p>
+          </div>
+          <div *ngIf="!showResult" class="failure-message">
+            <ion-icon name="information-circle" color="primary"></ion-icon>
+            <p>
+              Keine Sorge! Du kannst zur nächsten Station weitergehen und dort dein Wissen testen.
+            </p>
+          </div>
+        </div>
+      }
     </div>
   </ion-card-content>
 </ion-card>

@@ -7,8 +7,6 @@ import { ReplaySubject } from 'rxjs';
   providedIn: 'root',
 })
 export class GameService {
-
-
   private solvedStations: Set<Station> = new Set<Station>();
   private currentStation: Station | null = null;
   private unsolvedStations: Set<Station> = new Set<Station>();
@@ -20,7 +18,7 @@ export class GameService {
   }>(1);
 
   constructor() {
-    StationData.forEach((station) => {
+    StationData.forEach(station => {
       this.unsolvedStations.add(station);
     });
     this.currentStation = this.unsolvedStations.values().next().value || null;
@@ -32,7 +30,7 @@ export class GameService {
     this.unsolvedStations.delete(station);
     this.currentStation = station.nextStationId
       ? Array.from(this.unsolvedStations).find(s => s.id === station.nextStationId) || null
-      : null
+      : null;
     this.publishState();
   }
 
@@ -61,5 +59,4 @@ export class GameService {
   isStationSolved(station: Station): boolean {
     return this.solvedStations.has(station);
   }
-
 }

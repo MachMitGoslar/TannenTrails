@@ -1,6 +1,9 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { NotificationConfig, NotificationType } from '../../views/components/notfication/notfication.component';
+import {
+  NotificationConfig,
+  NotificationType,
+} from '../../views/components/notfication/notfication.component';
 import { Geolocation } from '@capacitor/geolocation';
 import { LocationService } from './location-service';
 
@@ -10,15 +13,17 @@ export interface ActiveNotification extends NotificationConfig {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationService {
   private notificationsSubject = new BehaviorSubject<ActiveNotification[]>([]);
   private idCounter = 0;
 
-  public notifications$: Observable<ActiveNotification[]> = this.notificationsSubject.asObservable();
+  public notifications$: Observable<ActiveNotification[]> =
+    this.notificationsSubject.asObservable();
 
-  constructor(private locationService: LocationService) { }
+  private locationService: LocationService = inject(LocationService);
+  constructor() {}
 
   /**
    * Show a success notification
@@ -30,7 +35,7 @@ export class NotificationService {
       message,
       duration: 4000,
       showCloseButton: true,
-      ...options
+      ...options,
     });
   }
 
@@ -44,7 +49,7 @@ export class NotificationService {
       message,
       duration: 6000,
       showCloseButton: true,
-      ...options
+      ...options,
     });
   }
 
@@ -58,7 +63,7 @@ export class NotificationService {
       message,
       duration: 0, // Persistent by default
       showCloseButton: true,
-      ...options
+      ...options,
     });
   }
 
@@ -70,7 +75,7 @@ export class NotificationService {
     const notification: ActiveNotification = {
       ...config,
       id,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     const currentNotifications = this.notificationsSubject.value;
@@ -112,7 +117,7 @@ export class NotificationService {
   /**
    * Quick notification methods for common use cases
    */
-  
+
   // Station completed successfully
   stationCompleted(stationNumber: number): string {
     return this.showSuccess(
@@ -124,11 +129,9 @@ export class NotificationService {
 
   // Location reached
   locationReached(stationName: string): string {
-    return this.showSuccess(
-      'Standort erreicht!',
-      `Du bist bei "${stationName}" angekommen.`,
-      { duration: 3000 }
-    );
+    return this.showSuccess('Standort erreicht!', `Du bist bei "${stationName}" angekommen.`, {
+      duration: 3000,
+    });
   }
 
   // GPS not available
@@ -136,14 +139,14 @@ export class NotificationService {
     return this.showWarning(
       'GPS nicht verfügbar',
       'Bitte aktiviere die Standortdienste, um den TannenTrail optimal zu nutzen.',
-      { 
+      {
         duration: 0,
         actionButton: {
           text: 'Einstellungen',
           handler: () => {
             this.locationService.checkPermissionStatus();
-          }
-        }
+          },
+        },
       }
     );
   }
@@ -158,8 +161,8 @@ export class NotificationService {
           text: 'Erneut versuchen',
           handler: () => {
             // Retry logic
-          }
-        }
+          },
+        },
       }
     );
   }

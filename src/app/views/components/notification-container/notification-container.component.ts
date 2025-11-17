@@ -1,8 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { NotificationComponent } from '../notfication/notfication.component';
-import { NotificationService, ActiveNotification } from '../../../core/services/notification.service';
+import {
+  NotificationService,
+  ActiveNotification,
+} from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-notification-container',
@@ -13,47 +16,48 @@ import { NotificationService, ActiveNotification } from '../../../core/services/
         [config]="notification"
         [visible]="true"
         (dismissed)="onNotificationDismissed(notification.id)"
-        (actionClicked)="onNotificationAction(notification.id)">
+        (actionClicked)="onNotificationAction(notification.id)"
+      >
       </app-notification>
     </div>
   `,
-  styles: [`
-    .notifications-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 10000;
-      pointer-events: none;
-    }
+  styles: [
+    `
+      .notifications-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10000;
+        pointer-events: none;
+      }
 
-    .notifications-container > * {
-      pointer-events: auto;
-    }
+      .notifications-container > * {
+        pointer-events: auto;
+      }
 
-    /* Stack notifications with slight offset */
-    app-notification:nth-child(n+2) {
-      transform: translateY(calc(var(--notification-height, 80px) * (var(--index, 1) - 1) + 8px * var(--index, 1)));
-    }
-  `],
+      /* Stack notifications with slight offset */
+      app-notification:nth-child(n + 2) {
+        transform: translateY(
+          calc(var(--notification-height, 80px) * (var(--index, 1) - 1) + 8px * var(--index, 1))
+        );
+      }
+    `,
+  ],
   standalone: true,
-  imports: [
-    CommonModule,
-    NotificationComponent
-  ]
+  imports: [CommonModule, NotificationComponent],
 })
 export class NotificationContainerComponent implements OnInit, OnDestroy {
   notifications: ActiveNotification[] = [];
   private subscription?: Subscription;
 
-  constructor(private notificationService: NotificationService) {}
+  private notificationService: NotificationService = inject(NotificationService);
+  constructor() {}
 
   ngOnInit() {
-    this.subscription = this.notificationService.notifications$.subscribe(
-      notifications => {
-        this.notifications = notifications;
-      }
-    );
+    this.subscription = this.notificationService.notifications$.subscribe(notifications => {
+      this.notifications = notifications;
+    });
   }
 
   ngOnDestroy() {

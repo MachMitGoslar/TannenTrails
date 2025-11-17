@@ -15,7 +15,7 @@
   transition: all 0.3s ease-out;
 
   &.notification-success {
-    --notification-color: var(--ion-color-success);
+    --notification-color: white;
     --notification-bg: linear-gradient(135deg, var(--ion-color-success-tint), #c3e6cb 100%);
     --notification-border: #b8dacd;
     --icon-color: var(--ion-text-color-success);
@@ -44,7 +44,7 @@
   border-radius: 16px;
   background: var(--notification-bg);
   border-left: 4px solid var(--notification-color);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.12),
     0 2px 16px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10px);
@@ -59,9 +59,9 @@
     right: 0;
     height: 1px;
     background: linear-gradient(
-      90deg, 
-      transparent 0%, 
-      var(--notification-color) 50%, 
+      90deg,
+      transparent 0%,
+      var(--notification-color) 50%,
       transparent 100%
     );
   }
@@ -84,7 +84,7 @@
 
   .notification-icon {
     font-size: 28px;
-    color: var(--icon-color);
+    color: white;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     animation: iconBounce 0.6s ease-out;
   }
@@ -98,14 +98,14 @@
     margin: 0 0 4px 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-color);
+    color: white;
     line-height: 1.3;
   }
 
   .notification-message {
     margin: 0;
     font-size: 0.95rem;
-    color: var(--text-color);
+    color: white;
     opacity: 0.8;
     line-height: 1.4;
     word-wrap: break-word;
@@ -187,7 +187,7 @@
 // Hover effects
 .notification-card:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.15),
     0 4px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease-out;
@@ -223,26 +223,38 @@
 @media (prefers-color-scheme: dark) {
   .notification-container {
     &.notification-success {
-      --notification-bg: linear-gradient(135deg, var(--ion-color-success-tint) 0%, var(--ion-color-success) 100%);
+      --notification-bg: linear-gradient(
+        135deg,
+        var(--ion-color-success-tint) 0%,
+        var(--ion-color-success) 100%
+      );
       --icon-color: #4ade80;
       --text-color: #bbf7d0;
     }
 
     &.notification-warning {
-      --notification-bg: linear-gradient(135deg, var(--ion-color-warning-tint) 0%, var(--ion-color-warning) 100%);
+      --notification-bg: linear-gradient(
+        135deg,
+        var(--ion-color-warning-tint) 0%,
+        var(--ion-color-warning) 100%
+      );
       --icon-color: #fbbf24;
       --text-color: #fef3c7;
     }
 
     &.notification-error {
-      --notification-bg: linear-gradient(135deg, var(--ion-color-danger-tint) 0%, var(--ion-color-danger) 100%);
+      --notification-bg: linear-gradient(
+        135deg,
+        var(--ion-color-danger-tint) 0%,
+        var(--ion-color-danger) 100%
+      );
       --icon-color: #f87171;
       --text-color: #fecaca;
     }
   }
 
   .notification-card {
-    box-shadow: 
+    box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.4),
       0 2px 16px rgba(0, 0, 0, 0.3);
   }
