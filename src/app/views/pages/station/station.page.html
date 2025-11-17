@@ -9,52 +9,52 @@
 
 <ion-content [fullscreen]="true" class="station-content">
   <ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/map"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Station {{ station.id }}</ion-title>
-  </ion-toolbar>
-</ion-header>
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/map"></ion-back-button>
+      </ion-buttons>
+      <ion-title>Station {{ station.id }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
   <!-- Hero Image Section -->
   <div class="hero-section" *ngIf="station">
     <img [src]="station.imageUrl" [alt]="station.title" class="station-image" />
     <div class="hero-overlay">
       <div class="hero-header">
-      <h1 class="station-title">{{ station.title }}</h1>
-      <div class="station-number">Station {{ station.id }}</div>
+        <h1 class="station-title">{{ station.title }}</h1>
+        <div class="station-number">Station {{ station.id }}</div>
       </div>
 
-            <ion-card class="description-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="information-circle-outline"></ion-icon>
-          Beschreibung
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p class="description-text">{{ station.description }}</p>
-      </ion-card-content>
-    </ion-card>
+      <ion-card class="description-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="information-circle-outline"></ion-icon>
+            Beschreibung
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p class="description-text">{{ station.description }}</p>
+        </ion-card-content>
+      </ion-card>
     </div>
-
   </div>
 
   <!-- Content Section -->
   <div class="content-section">
     <!-- Description Card -->
 
-    @if (station.question && !inRadius && !successAnimationDone ) {
-      <div class="question-container" style="position: relative;">
-        <app-question-card 
+    @if (station.question && !inRadius && !successAnimationDone) {
+      <div class="question-container" style="position: relative">
+        <app-question-card
           [question]="station.question"
           (answerSubmitted)="handleAnswerSubmission($event)"
         >
         </app-question-card>
 
-        <app-stars-animation 
+        <app-stars-animation
           [animate]="questionAnsweredSuccessfully"
-          (animation_done)="setAnimationDone($event)">
+          (animation_done)="setAnimationDone($event)"
+        >
         </app-stars-animation>
       </div>
     }
@@ -70,8 +70,8 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        <ion-icon name="navigate" [style]="{'font-size': '4rem', 'rotate': '-45deg'}"></ion-icon>
-        <p> Du läufst in folgende Richtung: {{ heading | async }}°</p>
+        <ion-icon name="navigate" [style]="{ 'font-size': '4rem', rotate: '-45deg' }"></ion-icon>
+        <p>Du läufst in folgende Richtung: {{ heading | async }}°</p>
         <p>Entfernung zur nächsten Station: {{ distanceToStation | async | number: '1.0-0' }} m</p>
       </ion-card-content>
     </ion-card>
@@ -86,11 +86,7 @@
       </ion-card-header>
       <ion-card-content>
         <p>Du hast diese Station abgeschlossen. Zurück zu Karte?</p>
-        <ion-button 
-          expand="block" 
-          color="success" 
-          routerLink="/map"
-          class="home-button">
+        <ion-button expand="block" color="success" routerLink="/map" class="home-button">
           <ion-icon name="home-outline" slot="start"></ion-icon>
           Zurück zur Karte
         </ion-button>

@@ -1,13 +1,12 @@
 <div id="station-bar">
-@if(station) {
-
+  @if (station) {
     <div class="station-info">
       <div class="station-number">Station {{ station.id }}</div>
       <div class="station-title">{{ station.title }}</div>
     </div>
-}
-@else {
-  <div class="station-info empty">
+  } @else {
+    <div class="station-info empty">
       <div class="station-number">Wähle die nächste Station von der Karte aus</div>
     </div>
-}
+  }
+</div>

@@ -8,7 +8,7 @@ import {
   caretForwardCircleOutline,
   arrowForwardCircle,
   arrowForwardOutline,
-  
+
   // Action icons
   checkmark,
   checkmarkCircle,
@@ -16,32 +16,32 @@ import {
   close,
   closeCircle,
   refresh,
-  
+
   // Information icons
   informationCircle,
   informationCircleOutline,
   helpCircleOutline,
   warning,
-  
+
   // Nature/Forest icons
   leafOutline,
   pawOutline,
   trashOutline,
   star,
-  
+
   // Location/Navigation icons
   compassOutline,
   navigate,
   homeOutline,
-  
+
   // Achievement icons
   trophy,
   trophyOutline,
-  
+
   // Utility icons
   add,
   ellipseOutline,
-  closeCircleOutline
+  closeCircleOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -61,38 +61,38 @@ export class AppComponent {
       'caret-forward-circle-outline': caretForwardCircleOutline,
       'arrow-forward-circle': arrowForwardCircle,
       'arrow-forward-outline': arrowForwardOutline,
-      
+
       // Action icons
-      'checkmark': checkmark,
+      checkmark: checkmark,
       'checkmark-circle': checkmarkCircle,
       'checkmark-circle-outline': checkmarkCircleOutline,
       'ellipse-outline': ellipseOutline,
-      'close': close,
+      close: close,
       'close-circle': closeCircle,
-      'refresh': refresh,
-      
+      refresh: refresh,
+
       // Information icons
       'information-circle': informationCircle,
       'information-circle-outline': informationCircleOutline,
       'help-circle-outline': helpCircleOutline,
-      'warning': warning,
-      
+      warning: warning,
+
       // Nature/Forest icons
       'leaf-outline': leafOutline,
       'paw-outline': pawOutline,
       'trash-outline': trashOutline,
-      'star': star,
-      
+      star: star,
+
       // Location/Navigation icons
       'compass-outline': compassOutline,
-      'navigate': navigate,
+      navigate: navigate,
       'home-outline': homeOutline,
       // Achievement icons
-      'trophy': trophy,
+      trophy: trophy,
       'trophy-outline': trophyOutline,
-      
+
       // Utility icons
-      'add': add,
+      add: add,
       'close-circle-outline': closeCircleOutline,
     });
   }

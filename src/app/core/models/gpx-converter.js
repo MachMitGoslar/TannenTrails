@@ -10,52 +10,52 @@ const path = require('path');
 
 function parseGpxToJson(gpxContent) {
   const trackPoints = [];
-  
+
   // More flexible regex to handle multiline and spacing variations
   const trkptRegex = /<trkpt\s+lat="([^"]+)"\s+lon="([^"]+)"[^>]*>\s*<ele>([^<]+)<\/ele>/gs;
-  
+
   let match;
   while ((match = trkptRegex.exec(gpxContent)) !== null) {
     const lat = parseFloat(match[1]);
     const lng = parseFloat(match[2]);
     const alt = parseFloat(match[3]);
-    
+
     // Validate the parsed values
     if (!isNaN(lat) && !isNaN(lng) && !isNaN(alt)) {
       // Add to array in [lat, lng, alt] format
       trackPoints.push([lat, lng, alt]);
     }
   }
-  
+
   // If the above regex fails, try a different approach
   if (trackPoints.length === 0) {
     console.log('🔍 Trying alternative parsing method...');
-    
+
     // Split by trkpt tags and parse each one
     const trkptSections = gpxContent.split('<trkpt');
-    
+
     for (let i = 1; i < trkptSections.length; i++) {
       const section = trkptSections[i];
-      
+
       // Extract lat and lon from the opening tag
       const latMatch = section.match(/lat="([^"]+)"/);
       const lonMatch = section.match(/lon="([^"]+)"/);
-      
+
       // Extract elevation
       const eleMatch = section.match(/<ele>([^<]+)<\/ele>/);
-      
+
       if (latMatch && lonMatch && eleMatch) {
         const lat = parseFloat(latMatch[1]);
         const lng = parseFloat(lonMatch[1]);
         const alt = parseFloat(eleMatch[1]);
-        
+
         if (!isNaN(lat) && !isNaN(lng) && !isNaN(alt)) {
           trackPoints.push([lat, lng, alt]);
         }
       }
     }
   }
-  
+
   return trackPoints;
 }
 
@@ -68,11 +68,11 @@ function convertGpxFile() {
     path.join(currentDir, 'route.gpx'),
     path.join(currentDir, 'data.gpx'),
     path.join(currentDir, '..', '..', '..', 'assets', 'track.gpx'),
-    path.join(currentDir, '..', '..', '..', 'assets', 'route.gpx')
+    path.join(currentDir, '..', '..', '..', 'assets', 'route.gpx'),
   ];
-  
+
   let gpxFilePath = null;
-  
+
   // Find the first existing GPX file
   for (const filePath of possibleFiles) {
     try {
@@ -84,12 +84,12 @@ function convertGpxFile() {
       // Continue to next file
     }
   }
-  
+
   if (!gpxFilePath) {
     console.log('❌ No GPX file found. Please place a GPX file in one of these locations:');
     possibleFiles.forEach(file => console.log('   -', file));
     console.log('\n📝 Creating sample GPX file...');
-    
+
     // Create a sample GPX file for demonstration
     const sampleGpx = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="TannenTails">
@@ -111,15 +111,15 @@ function convertGpxFile() {
     </trkseg>
   </trk>
 </gpx>`;
-    
+
     const samplePath = path.join(currentDir, 'sample-track.gpx');
     fs.writeFileSync(samplePath, sampleGpx);
     console.log('✅ Created sample GPX file:', samplePath);
     gpxFilePath = samplePath;
   }
-  
+
   const outputPath = path.join(currentDir, 'track-points.json');
-  
+
   try {
     // Read the GPX file
     const gpxContent = fs.readFileSync(gpxFilePath, 'utf8');
@@ -134,11 +134,11 @@ function convertGpxFile() {
       const snippet = gpxContent.substring(firstTrkptIndex, firstTrkptIndex + 300);
       console.log('📋 First track point snippet:\n', snippet);
     }
-    
+
     // Parse GPX to JSON
     const trackPoints = parseGpxToJson(gpxContent);
     console.log(`✅ Parsed ${trackPoints.length} track points`);
-    
+
     // Create the output object
     const output = {
       metadata: {
@@ -146,25 +146,24 @@ function convertGpxFile() {
         description: 'Track points for TannenTrails forest experience path',
         totalPoints: trackPoints.length,
         format: '[latitude, longitude, altitude]',
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
       },
-      trackPoints: trackPoints
+      trackPoints: trackPoints,
     };
-    
+
     // Write to JSON file
     fs.writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf8');
     console.log(`💾 Saved to: ${outputPath}`);
-    
+
     // Display sample data
     console.log('\n📊 Sample data:');
     console.log('First 5 points:');
     trackPoints.slice(0, 5).forEach((point, index) => {
       console.log(`  ${index + 1}: [${point[0]}, ${point[1]}, ${point[2]}]`);
     });
-    
+
     // Generate TypeScript interface
     generateTypeScriptInterface(outputPath);
-    
   } catch (error) {
     console.error('❌ Error converting GPX:', error.message);
     process.exit(1);
@@ -173,7 +172,7 @@ function convertGpxFile() {
 
 function generateTypeScriptInterface(jsonPath) {
   const tsInterfacePath = path.join(__dirname, 'track-points.model.ts');
-  
+
   const tsContent = `/**
  * TannenTrails Track Points Model
  * Generated from GPX data
@@ -215,7 +214,7 @@ export function createTrackPoint(lat: number, lng: number, alt: number): Coordin
   return [lat, lng, alt];
 }
 `;
-  
+
   fs.writeFileSync(tsInterfacePath, tsContent, 'utf8');
   console.log(`🔷 Generated TypeScript model: ${tsInterfacePath}`);
 }

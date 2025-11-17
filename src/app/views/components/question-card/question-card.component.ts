@@ -12,9 +12,14 @@ import {
   IonItem,
   IonLabel,
   IonInput,
-  IonButton
+  IonButton,
 } from '@ionic/angular/standalone';
-import { Question, MultipleChoiceQuestion, TrueFalseQuestion, EstimationQuestion } from '../../../core/models/questions.model';
+import {
+  Question,
+  MultipleChoiceQuestion,
+  TrueFalseQuestion,
+  EstimationQuestion,
+} from '../../../core/models/questions.model';
 
 export interface QuestionAnswer {
   questionId: string;
@@ -40,10 +45,10 @@ export interface QuestionAnswer {
     IonItem,
     IonLabel,
     IonInput,
-    IonButton
-  ]
+    IonButton,
+  ],
 })
-export class QuestionCardComponent implements OnInit, OnChanges{
+export class QuestionCardComponent implements OnInit, OnChanges {
   @Input() question!: Question;
   @Input() inRadius: boolean = false;
   @Input() showCard: boolean = true;
@@ -53,7 +58,7 @@ export class QuestionCardComponent implements OnInit, OnChanges{
   estimationInput: number | null = null;
   isAnswered: boolean = false;
   showResult: boolean = false;
-  
+
   // Retry counter properties
   readonly maxRetries: number = 3;
   attemptsUsed: number = 0;
@@ -127,24 +132,24 @@ export class QuestionCardComponent implements OnInit, OnChanges{
 
     const answer = this.getAnswerValue();
     const isCorrect = this.checkAnswer(answer);
-    
+
     // Increment attempts used
     this.attemptsUsed++;
-    
+
     const questionAnswer: QuestionAnswer = {
       questionId: this.question.id,
       answerValue: answer,
-      isCorrect: isCorrect
+      isCorrect: isCorrect,
     };
 
     this.isAnswered = true;
     this.showResult = isCorrect;
-    
+
     // If answer is correct or max attempts reached, mark as completed
     if (isCorrect || this.attemptsUsed >= this.maxRetries) {
       this.isQuestionCompleted = true;
     }
-    
+
     this.answerSubmitted.emit(questionAnswer);
   }
 
@@ -152,7 +157,7 @@ export class QuestionCardComponent implements OnInit, OnChanges{
     this.answerSubmitted.emit({
       questionId: this.question.id,
       answerValue: null,
-      isCorrect: true
+      isCorrect: true,
     });
   }
 
@@ -174,17 +179,17 @@ export class QuestionCardComponent implements OnInit, OnChanges{
       case 'multiple-choice':
         const mcQuestion = this.question as MultipleChoiceQuestion;
         return answer === mcQuestion.correctOptionIndex;
-        
+
       case 'true-false':
         const tfQuestion = this.question as TrueFalseQuestion;
         return answer === tfQuestion.correctAnswer;
-        
+
       case 'estimation':
         const estQuestion = this.question as EstimationQuestion;
         if (answer === null || answer === undefined) return false;
         const difference = Math.abs(answer - estQuestion.correctValue);
         return difference <= estQuestion.marginOfError;
-        
+
       default:
         return false;
     }
@@ -218,7 +223,12 @@ export class QuestionCardComponent implements OnInit, OnChanges{
   }
 
   get canRetry(): boolean {
-    return !this.isQuestionCompleted && this.attemptsUsed < this.maxRetries && this.isAnswered && !this.showResult;
+    return (
+      !this.isQuestionCompleted &&
+      this.attemptsUsed < this.maxRetries &&
+      this.isAnswered &&
+      !this.showResult
+    );
   }
 
   get isLastAttempt(): boolean {
@@ -227,7 +237,9 @@ export class QuestionCardComponent implements OnInit, OnChanges{
 
   // Helper method to generate array for *ngFor in template
   getRetryArray(count: number): number[] {
-    return Array(count).fill(0).map((x, i) => i);
+    return Array(count)
+      .fill(0)
+      .map((x, i) => i);
   }
 
   // Button state methods for template
@@ -259,7 +271,7 @@ export class QuestionCardComponent implements OnInit, OnChanges{
         return 'Frage beendet';
       }
     }
-    
+
     if (this.isAnswered) {
       if (this.showResult) {
         return 'Richtig! Gut gemacht!';
@@ -271,11 +283,11 @@ export class QuestionCardComponent implements OnInit, OnChanges{
         }
       }
     }
-    
+
     if (this.isLastAttempt) {
       return 'Letzter Versuch - Antwort prüfen';
     }
-    
+
     return 'Antwort überprüfen';
   }
 }

@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Validate commit message format (optional conventional commits check)
+commit_regex='^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,50}'
+
+if ! grep -qE "$commit_regex" "$1"; then
+  echo "❌ Invalid commit message format!"
+  echo ""
+  echo "ℹ️  Commit messages should follow the conventional commits format:"
+  echo "   <type>(<scope>): <description>"
+  echo ""
+  echo "📝 Examples:"
+  echo "   feat(location): add GPS tracking functionality"
+  echo "   fix(ui): resolve station bar display issue"
+  echo "   docs: update README with setup instructions"
+  echo "   style: format code with prettier"
+  echo ""
+  echo "🔗 Learn more: https://www.conventionalcommits.org/"
+  exit 1
+fi

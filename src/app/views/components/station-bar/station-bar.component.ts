@@ -6,12 +6,12 @@ import { Station } from 'src/app/core/models/station.model';
   templateUrl: './station-bar.component.html',
   styleUrls: ['./station-bar.component.scss'],
 })
-export class StationBarComponent  implements OnInit {
-
+export class StationBarComponent implements OnInit {
   @Input() station?: Station;
 
-  constructor() { }
+  constructor() {}
 
-  ngOnInit() {}
-
+  ngOnInit() {
+    console.log('StationBar loaded:', this.station);
+  }
 }

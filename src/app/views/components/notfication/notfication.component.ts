@@ -1,13 +1,24 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  OnDestroy,
+  ElementRef,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { 
+import {
   IonCard,
   IonCardContent,
   IonIcon,
   IonButton,
   IonRippleEffect,
   AnimationController,
-  Animation
+  Animation,
 } from '@ionic/angular/standalone';
 
 import { doc } from '@angular/fire/firestore';
@@ -31,14 +42,7 @@ export interface NotificationConfig {
   templateUrl: './notfication.component.html',
   styleUrls: ['./notfication.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    IonCard,
-    IonCardContent,
-    IonIcon,
-    IonButton,
-    IonRippleEffect
-  ]
+  imports: [CommonModule, IonCard, IonCardContent, IonIcon, IonButton, IonRippleEffect],
 })
 export class NotificationComponent implements OnInit, OnChanges, OnDestroy {
   @Input() config!: NotificationConfig;
@@ -49,7 +53,8 @@ export class NotificationComponent implements OnInit, OnChanges, OnDestroy {
   private autoHideTimer?: number;
   private animation?: Animation;
 
-  constructor(private animationCtrl: AnimationController) {
+  private animationCtrl: AnimationController = inject(AnimationController);
+  constructor() {
     // Icons are now preloaded in AppComponent
   }
 
@@ -122,21 +127,20 @@ export class NotificationComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private async playEnterAnimation(): Promise<void> {
-    setTimeout(async() => {
-          const element = document.querySelector('.notification-container');
-    if (!element) return;
+    setTimeout(async () => {
+      const element = document.querySelector('.notification-container');
+      if (!element) return;
 
-    this.animation = this.animationCtrl
-      .create()
-      .addElement(element)
-      .duration(300)
-      .easing('ease-out')
-      .fromTo('transform', 'translateY(-100%)', 'translateY(0)')
-      .fromTo('opacity', '0', '1');
+      this.animation = this.animationCtrl
+        .create()
+        .addElement(element)
+        .duration(300)
+        .easing('ease-out')
+        .fromTo('transform', 'translateY(-100%)', 'translateY(0)')
+        .fromTo('opacity', '0', '1');
 
-    await this.animation.play();
+      await this.animation.play();
     }, 100);
-
   }
 
   private async playExitAnimation(): Promise<void> {

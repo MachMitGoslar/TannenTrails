@@ -3,7 +3,11 @@
 // Hero Container Styling
 #hero-container {
   position: relative;
-  background: linear-gradient(135deg, var(--ion-color-primary-shade) 0%, var(--ion-color-primary-tint) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--ion-color-primary-shade) 0%,
+    var(--ion-color-primary-tint) 100%
+  );
   padding: 40px 20px 10px;
   //height: 30vh;
   text-align: center;
@@ -17,13 +21,16 @@
     left: -50%;
     width: 200%;
     height: 50%;
-    background: linear-gradient(120deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.2) 100%);
+    background: linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.2) 100%
+    );
     transform: rotate(25deg);
     animation: heroShimmer 6s infinite;
     pointer-events: none;
   }
-  
-  
 
   img {
     position: relative;
@@ -34,7 +41,7 @@
     margin-bottom: 10px;
     filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
     //animation: logoFloat 3s ease-in-out infinite;
-    
+
     // Enhance logo visibility
     background: rgba(255, 255, 255, 0.1);
     padding: 10px;
@@ -53,14 +60,13 @@
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     letter-spacing: 1px;
     animation: titleSlideUp 1s ease-out 0.5s both;
-    
-    
+
     &::after {
       animation-delay: -2s;
     }
   }
 }
-  // Map Container
+// Map Container
 // Map Container
 .map-container {
   margin: 0 5px;
@@ -70,7 +76,6 @@
   position: relative;
   animation: mapSlideIn 0.4s ease-out 0.5s both;
 
-  
   &::after,
   &::before {
     content: '';
@@ -79,10 +84,15 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, var(--ion-color-primary-shade), var(--ion-color-secondary-tint), var(--ion-color-primary-shade));
+    background: linear-gradient(
+      90deg,
+      var(--ion-color-primary-shade),
+      var(--ion-color-secondary-tint),
+      var(--ion-color-primary-shade)
+    );
     z-index: 1000;
   }
-  
+
   #map {
     height: 60vh;
     width: 100% !important;
@@ -92,7 +102,8 @@
 
 // Animations
 @keyframes heroShimmer {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(-100%) rotate(45deg);
   }
   50% {
@@ -101,7 +112,8 @@
 }
 
 @keyframes logoFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) scale(1);
   }
   50% {
@@ -132,7 +144,8 @@
 }
 
 @keyframes treeSwing {
-  0%, 100% {
+  0%,
+  100% {
     transform: rotate(0deg);
   }
   25% {
@@ -144,7 +157,8 @@
 }
 
 @keyframes floatAndRotate {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
     opacity: 0.3;
   }
@@ -166,21 +180,21 @@
 @media (min-width: 768px) {
   #hero-container {
     padding: 60px 40px 80px;
-    
+
     img {
       max-width: 320px;
       margin-bottom: 30px;
     }
-    
+
     h2 {
       font-size: 2.2rem;
       letter-spacing: 2px;
     }
   }
-  
+
   .map-container {
     margin: 0 24px;
-    
+
     #map {
       height: 600px !important;
     }
@@ -190,16 +204,16 @@
 @media (max-width: 480px) {
   #hero-container {
     padding: 8px 10px 10px;
-    
+
     img {
       max-width: 240px;
       padding: 15px;
     }
-    
+
     h2 {
       font-size: 1.5rem;
       letter-spacing: 0.5px;
-      
+
       &::before,
       &::after {
         margin: 0 10px;
@@ -212,22 +226,26 @@
 // Dark mode support
 @media (prefers-color-scheme: dark) {
   #hero-container {
-    background: linear-gradient(135deg, var(--ion-color-primary-shade) 0%, var(--ion-color-primary-tint) 100%);
-    
+    background: linear-gradient(
+      135deg,
+      var(--ion-color-primary-shade) 0%,
+      var(--ion-color-primary-tint) 100%
+    );
+
     img {
       background: rgba(255, 255, 255, 0.05);
       border-color: rgba(255, 255, 255, 0.1);
     }
-    
+
     h2 {
       color: #e2e8f0;
       text-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
     }
   }
-  
+
   .map-container {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    
+
     &::after,
     &::before {
       background: linear-gradient(90deg, #4299e1, #805ad5, #4299e1);
@@ -241,20 +259,20 @@
     &::after {
       animation: none;
     }
-    
+
     img {
       animation: none;
     }
-    
+
     h2 {
       animation: none;
-      
+
       &::before,
       &::after {
         animation: none;
       }
     }
-    
+
     .floating-elements .leaf {
       animation: none;
     }

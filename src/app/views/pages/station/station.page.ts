@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -25,9 +25,9 @@ import { MultipleChoiceQuestion } from 'src/app/core/models/questions.model';
 import { map, Observable } from 'rxjs';
 import { LocationService } from 'src/app/core/services/location-service';
 import { insideCircle } from 'geolocation-utils';
-import { QuestionCardComponent } from "../../components/question-card/question-card.component";
+import { QuestionCardComponent } from '../../components/question-card/question-card.component';
 import { GameService } from 'src/app/core/services/game-service';
-import { StarsAnimationComponent } from "../../components/animations/stars/stars-animation.component";
+import { StarsAnimationComponent } from '../../components/animations/stars/stars-animation.component';
 
 @Component({
   selector: 'app-station',
@@ -52,8 +52,8 @@ import { StarsAnimationComponent } from "../../components/animations/stars/stars
     FormsModule,
     RouterModule,
     QuestionCardComponent,
-    StarsAnimationComponent
-],
+    StarsAnimationComponent,
+  ],
 })
 export class StationPage implements OnInit {
   station!: Station;
@@ -64,16 +64,16 @@ export class StationPage implements OnInit {
   successAnimationDone: boolean = false;
   questionAnsweredSuccessfully: boolean = false;
 
+  // Dependency injections
+  private route = inject(ActivatedRoute);
+  private locationService = inject(LocationService);
+  private gameService = inject(GameService);
 
-  constructor(
-    private route: ActivatedRoute,
-    private locationService: LocationService,
-    private gameService: GameService
-  ) {
+  constructor() {
     const stationId = this.route.snapshot.paramMap.get('id');
-    this.station = StationData.find((s) => s.id === Number(stationId))!;
+    this.station = StationData.find(s => s.id === Number(stationId))!;
     this.station.question = QuestionData[Number(stationId)];
-    if(this.gameService.isStationSolved(this.station)) {
+    if (this.gameService.isStationSolved(this.station)) {
       this.questionAnsweredSuccessfully = true;
       this.successAnimationDone = true;
       this.showQuestionCard = false;
@@ -82,9 +82,9 @@ export class StationPage implements OnInit {
     this.setupDistanceObserver();
   }
 
-  ngOnInit() {}
-
-
+  ngOnInit() {
+    console.log('Station loaded:', this.station);
+  }
 
   // getQuestionOptions(): string[] {
   //   if (
@@ -97,13 +97,10 @@ export class StationPage implements OnInit {
   // }
 
   setupDistanceObserver() {
-    let station_pos = L.latLng(
-      this.station.positionLat,
-      this.station.positionLng
-    );
+    let station_pos = L.latLng(this.station.positionLat, this.station.positionLng);
 
     this.distanceToStation = this.locationService.watchPosition().pipe(
-      map((position) => {
+      map(position => {
         if (position) {
           let distance = station_pos.distanceTo(
             L.latLng(position.coords.latitude, position.coords.longitude)
@@ -122,7 +119,7 @@ export class StationPage implements OnInit {
     );
     this.heading = this.locationService.watchPosition().pipe(
       map(
-        (position) => {
+        position => {
           if (position) {
             return position.coords.heading ?? 200;
           } else {
@@ -135,16 +132,14 @@ export class StationPage implements OnInit {
   }
   handleAnswerSubmission(event: any) {
     console.log('Answer submitted for station', this.station.id, ':', event);
-    if(event.isCorrect) {
+    if (event.isCorrect) {
       this.gameService.solveStation(this.station);
       this.questionAnsweredSuccessfully = true;
     }
   }
 
   setAnimationDone(event: boolean) {
-    console.log("Animation done event received:", event);
+    console.log('Animation done event received:', event);
     this.successAnimationDone = event;
   }
-
-  
 }
