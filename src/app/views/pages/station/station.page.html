@@ -8,12 +8,23 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="station-content">
+  <ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/map"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Station {{ station.id }}</ion-title>
+  </ion-toolbar>
+</ion-header>
   <!-- Hero Image Section -->
   <div class="hero-section" *ngIf="station">
     <img [src]="station.imageUrl" [alt]="station.title" class="station-image" />
     <div class="hero-overlay">
+      <div class="hero-header">
       <h1 class="station-title">{{ station.title }}</h1>
       <div class="station-number">Station {{ station.id }}</div>
+      </div>
+
             <ion-card class="description-card">
       <ion-card-header>
         <ion-card-title>
@@ -48,9 +59,10 @@
       </div>
     }
 
+    <div class="spacer"></div>
 
     <!-- DistanceCard -->
-    <ion-card class="distance-card" *ngIf="!inRadius && !successAnimationDone">
+    <ion-card class="distance-card" *ngIf="inRadius && !successAnimationDone">
       <ion-card-header>
         <ion-card-title>
           <ion-icon name="compass-outline"></ion-icon>

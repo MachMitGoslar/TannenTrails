@@ -1,9 +1,4 @@
 <ion-content [fullscreen]="true" color="primary">
-  <ion-header collapse="condense">
-    <ion-toolbar color="secondary">
-      <ion-title size="large">TannenTrails - Übersicht</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
   <div id="hero-container">
     <img src="assets/logos/Stadtforst Goslar_Logo_Aller_Slogan_Negativ_ohne Subline.png" alt="TannenTrails Logo" />
@@ -11,5 +6,6 @@
   </div>
   <div class="map-container">
     <div id="map" style="height: 500px;width: 100%;"></div>
+    <app-station-bar [station]="activeStation"></app-station-bar>
   </div>
 </ion-content>

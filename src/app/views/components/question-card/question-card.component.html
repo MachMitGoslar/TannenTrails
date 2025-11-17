@@ -11,6 +11,32 @@
   
   <ion-card-content>
     <div class="question-content">
+      <!-- Retry Counter -->
+      <div class="retry-counter" *ngIf="attemptsUsed > 0 || isAnswered">
+        <div class="retry-info">
+          <span class="retry-text">
+            <span *ngIf="!isQuestionCompleted">Versuche übrig: {{ retriesLeft }}</span>
+            <span *ngIf="isQuestionCompleted && showResult">✅ Frage erfolgreich beantwortet!</span>
+            <span *ngIf="isQuestionCompleted && !showResult">❌ Keine Versuche mehr übrig</span>
+          </span>
+        </div>
+        <div class="retry-dots">
+          <!-- Used attempts (filled circles) -->
+          <ion-icon 
+            *ngFor="let used of getRetryArray(attemptsUsed)" 
+            name="ellipse" 
+            class="retry-dot used"
+            [color]="showResult ? 'success' : 'danger'">
+          </ion-icon>
+          <!-- Remaining attempts (outline circles) -->
+          <ion-icon 
+            *ngFor="let remaining of getRetryArray(retriesLeft)" 
+            name="ellipse-outline" 
+            class="retry-dot remaining"
+            color="white">
+          </ion-icon>
+        </div>
+      </div>
       <p class="question-text">{{ question.questionText }}</p>
       
       <!-- Multiple Choice Question -->
@@ -108,34 +134,62 @@
         </div>
       </div>
 
+      
+
       <!-- Submit Button -->
-      <ion-button 
-        expand="block" 
-        [color]="isAnswered ? (showResult ? 'success' : 'danger') : 'primary'" 
-        class="submit-button"
-        [disabled]="!canSubmitAnswer() || isAnswered"
-        (click)="submitAnswer()">
-        <ion-icon 
-          [name]="isAnswered ? (showResult ? 'checkmark-circle' : 'close-circle') : 'checkmark-circle-outline'" 
-          slot="start">
-        </ion-icon>
-        <span *ngIf="!isAnswered">Antwort überprüfen</span>
-        <span *ngIf="isAnswered && showResult">Richtig! Gut gemacht!</span>
-        <span *ngIf="isAnswered && !showResult">Leider falsch. Versuche es nochmal!</span>
-      </ion-button>
+       @if(!isAnswered && question.type !== 'external') {
+          <ion-button 
+            expand="block" 
+            color="primary"
+            class="submit-button"
+            (click)="submitAnswer()">
+              <ion-icon 
+               name="question-mark-circle" 
+               slot="start">
+              </ion-icon>
+              <span> Überprüfen </span>
+          </ion-button>
+       }
 
-      <!-- Reset Button for answered questions -->
-      <ion-button 
-        *ngIf="isAnswered"
-        expand="block" 
-        fill="clear" 
-        color="color-dark-100"
-        class="reset-button"
-        (click)="resetQuestion()">
-        <ion-icon name="refresh" slot="start"></ion-icon>
-        Nochmal versuchen
-      </ion-button>
+       @if(!isAnswered && question.type === 'external') {
+        <ion-button
+          expand="block"
+          color="primary"
+          class="external-button"
+          (click)="finishExternalTask()">
+          <ion-icon name="checkmark"></ion-icon>Ist erledigt!
 
+        </ion-button>
+       }
+       @if(isAnswered && retriesLeft > 0 && !isQuestionCompleted) {
+        <ion-button
+          *ngIf="canRetry"
+          expand="block" 
+          fill="outline" 
+          color="warning"
+          class="reset-button"
+          (click)="resetQuestion()">
+          <ion-icon name="refresh" slot="start"></ion-icon>
+          <span *ngIf="!isLastAttempt">Nochmal versuchen ({{ retriesLeft - 1 }} Versuche übrig)</span>
+          <span *ngIf="isLastAttempt">Letzter Versuch!</span>
+        </ion-button>
+       }
+
+       @if(isAnswered && isQuestionCompleted) {
+        <div class="final-result">
+          <div *ngIf="showResult" class="success-message">
+            <ion-icon name="trophy" color="warning"></ion-icon>
+            <p>Großartig! Du hast die Frage {{ attemptsUsed === 1 ? 'beim ersten Versuch' : 'nach ' + attemptsUsed + ' Versuchen' }} richtig beantwortet!</p>
+          </div>
+          <div *ngIf="!showResult" class="failure-message">
+            <ion-icon name="information-circle" color="primary"></ion-icon>
+            <p>Keine Sorge! Du kannst zur nächsten Station weitergehen und dort dein Wissen testen.</p>
+          </div>
+        </div>
+       }
+      
+
+      
     </div>
   </ion-card-content>
 </ion-card>

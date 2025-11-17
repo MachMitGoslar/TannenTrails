@@ -8,7 +8,7 @@ export enum QuestionType {
 
 export class Question {
   id: string
-  type: 'multiple-choice' | 'true-false' | 'estimation' = 'multiple-choice'
+  type: 'multiple-choice' | 'true-false' | 'estimation' | 'external' = 'multiple-choice'
   questionText: string = ''
 
   constructor(id: string, init?: Partial<Question>) {
@@ -43,6 +43,15 @@ export class EstimationQuestion extends Question {
 
   constructor(id: string, init?: Partial<EstimationQuestion>) {
     super(id, init)
+    Object.assign(this, init)
+  }
+}
+
+export class ExternalQuestion extends Question {
+
+  constructor(id: string, init?: Partial<ExternalQuestion>) {
+    super(id, init)
+    this.type = 'external'
     Object.assign(this, init)
   }
 }

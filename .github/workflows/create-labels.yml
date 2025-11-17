@@ -1,0 +1,57 @@
+name: 'PR Labels erstellen'
+
+on:
+  workflow_run:
+    workflows: ["Pull Request zu Main Branch"]
+    types:
+      - completed
+
+jobs:
+  create-labels:
+    name: 'GitHub Labels erstellen'
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: 'Labels für Repository erstellen'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = [
+              { name: 'service', color: '0052cc', description: 'Änderungen an Services' },
+              { name: 'component', color: '5319e7', description: 'Änderungen an Komponenten' },
+              { name: 'styling', color: 'd93f0b', description: 'CSS/SCSS Änderungen' },
+              { name: 'tests', color: '0e8a16', description: 'Test-bezogene Änderungen' },
+              { name: 'documentation', color: '0075ca', description: 'Dokumentation' },
+              { name: 'size: small', color: '00ff00', description: 'Kleine PR (< 50 Zeilen)' },
+              { name: 'size: medium', color: 'ffaa00', description: 'Mittlere PR (50-200 Zeilen)' },
+              { name: 'size: large', color: 'ff0000', description: 'Große PR (> 200 Zeilen)' },
+              { name: 'ready-to-merge', color: '006b75', description: 'Bereit für Merge' },
+              { name: 'needs-review', color: 'fbca04', description: 'Benötigt Review' },
+              { name: 'work-in-progress', color: 'f9d0c4', description: 'Work in Progress' },
+              { name: 'breaking-change', color: 'd73a4a', description: 'Breaking Change' },
+              { name: 'enhancement', color: 'a2eeef', description: 'Verbesserung' },
+              { name: 'bug', color: 'd73a4a', description: 'Fehlerbehebung' },
+              { name: 'ionic', color: '3880ff', description: 'Ionic Framework bezogen' },
+              { name: 'angular', color: 'dd0031', description: 'Angular Framework bezogen' },
+              { name: 'capacitor', color: '119eff', description: 'Capacitor bezogen' }
+            ];
+            
+            for (const label of labels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                console.log(`Label '${label.name}' erstellt`);
+              } catch (error) {
+                if (error.status === 422) {
+                  console.log(`Label '${label.name}' existiert bereits`);
+                } else {
+                  console.error(`Fehler beim Erstellen des Labels '${label.name}':`, error.message);
+                }
+              }
+            }

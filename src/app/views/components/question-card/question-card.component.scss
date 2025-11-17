@@ -1,5 +1,5 @@
 .question-card {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, var(--ion-color-secondary-tint) 0%, var(--ion-color-secondary-shade) 100%);
   color: white;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -35,14 +35,19 @@
       gap: 8px;
       font-size: 1.3rem;
       font-weight: 600;
+              filter: drop-shadow(2px 2px 2px #333);
+
 
       ion-icon {
         font-size: 1.5rem;
+        //filter: drop-shadow(2px 2px 2px #333);
       }
 
       .question-status {
         display: flex;
         align-items: center;
+                text-shadow: 2px 2px 4px #1a1a1a;
+
         
         &.correct ion-icon {
           color: var(--ion-color-primary-tint);
@@ -124,8 +129,9 @@
 
       ion-radio {
         --color: white;
-        --color-checked: var(--ion-color-secondary-tint);
+        --color-checked: white;
         margin-right: 12px;
+        color: white;
 
         &:disabled {
           opacity: 0.7;
@@ -302,8 +308,8 @@
 // Dark mode support
 @media (prefers-color-scheme: dark) {
   .question-card {
-    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
-    
+    background: linear-gradient(135deg, rgba(var(--ion-color-secondary-tint), 0.2) 0%, rgba(var(--ion-color-secondary-shade),1) 100%);
+
     ion-card-content {
       .multiple-choice,
       .true-false {
@@ -384,3 +390,158 @@
     transform: none;
   }
 }
+
+// Retry Counter Styling
+.retry-counter {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 16px 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  .retry-info {
+    text-align: center;
+    margin-bottom: 8px;
+    
+    .retry-text {
+      font-size: 0.95rem;
+      color: white;
+      font-weight: 500;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+  }
+  
+  .retry-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    
+    .retry-dot {
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      color: white;
+      
+      &.used {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+      
+      &.remaining {
+        opacity: 0.6;
+      }
+    }
+  }
+}
+
+// Final Result Messages
+.final-result {
+  margin: 16px 0;
+  
+  .success-message,
+  .failure-message {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    
+    ion-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    p {
+      margin: 0;
+      color: white;
+      font-weight: 500;
+      line-height: 1.4;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+  }
+  
+  .success-message {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: rgba(255, 215, 0, 0.3);
+    
+    ion-icon {
+      color: var(--ion-color-warning);
+    }
+  }
+  
+  .failure-message {
+    background: rgba(52, 152, 219, 0.2);
+    border-color: rgba(52, 152, 219, 0.3);
+    
+    ion-icon {
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+// Enhanced Button Styling for Retry States
+.reset-button {
+  margin-top: 8px;
+  
+  &.retry-warning {
+    --color: var(--ion-color-warning);
+    --color-hover: var(--ion-color-warning-shade);
+  }
+}
+
+// Submit Button States
+.submit-button {
+  &.last-attempt {
+    --background: var(--ion-color-warning);
+    --background-hover: var(--ion-color-warning-shade);
+    animation: pulseWarning 2s ease-in-out infinite;
+  }
+  
+  &.completed {
+    pointer-events: none;
+    opacity: 0.8;
+  }
+}
+
+@keyframes pulseWarning {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+  }
+}
+
+// Responsive Design for Retry Counter
+@media (max-width: 768px) {
+  .retry-counter {
+    padding: 10px 12px;
+    margin: 12px 0;
+    
+    .retry-info .retry-text {
+      font-size: 0.9rem;
+    }
+    
+    .retry-dots .retry-dot {
+      font-size: 1rem;
+      gap: 4px;
+    }
+  }
+  
+  .final-result {
+    .success-message,
+    .failure-message {
+      padding: 12px;
+      
+      ion-icon {
+        font-size: 1.6rem;
+      }
+      
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  }
+} 

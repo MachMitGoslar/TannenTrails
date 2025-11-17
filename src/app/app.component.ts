@@ -39,7 +39,9 @@ import {
   trophyOutline,
   
   // Utility icons
-  add
+  add,
+  ellipseOutline,
+  closeCircleOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -64,6 +66,7 @@ export class AppComponent {
       'checkmark': checkmark,
       'checkmark-circle': checkmarkCircle,
       'checkmark-circle-outline': checkmarkCircleOutline,
+      'ellipse-outline': ellipseOutline,
       'close': close,
       'close-circle': closeCircle,
       'refresh': refresh,
@@ -89,7 +92,8 @@ export class AppComponent {
       'trophy-outline': trophyOutline,
       
       // Utility icons
-      'add': add
+      'add': add,
+      'close-circle-outline': closeCircleOutline,
     });
   }
 }

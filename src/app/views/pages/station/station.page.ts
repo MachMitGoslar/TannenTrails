@@ -86,15 +86,15 @@ export class StationPage implements OnInit {
 
 
 
-  getQuestionOptions(): string[] {
-    if (
-      this.station?.question &&
-      this.station.question instanceof MultipleChoiceQuestion
-    ) {
-      return this.station.question.options;
-    }
-    return [];
-  }
+  // getQuestionOptions(): string[] {
+  //   if (
+  //     this.station?.question &&
+  //     this.station.question instanceof MultipleChoiceQuestion
+  //   ) {
+  //     return this.station.question.options;
+  //   }
+  //   return [];
+  // }
 
   setupDistanceObserver() {
     let station_pos = L.latLng(

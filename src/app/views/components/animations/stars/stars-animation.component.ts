@@ -9,7 +9,7 @@ import { IonIcon } from "@ionic/angular/standalone";
   styleUrls: ['./stars-animation.component.scss'],
   imports: [IonIcon, CommonModule]
 })
-export class StarsAnimationComponent  implements OnInit {
+export class StarsAnimationComponent  implements  OnChanges {
 
   showStars: boolean = false;
   stars: Array<{id: number, style: any}> = [];
@@ -28,8 +28,7 @@ export class StarsAnimationComponent  implements OnInit {
     }
   }
 
-  ngOnInit() {
-  }
+
 
   playSuccessAnimation() {
     // Create golden stars

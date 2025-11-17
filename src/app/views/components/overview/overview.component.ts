@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, AfterViewInit, HostListener} from '@angular/core';
 import { IonContent, IonHeader, IonToolbar, IonTitle,  } from "@ionic/angular/standalone";
-import { PathData, StationData } from "../../../core/models/dataset";
+import { PathData, Shortcuts, SpecialPoint, SpecialPoints, StationData } from "../../../core/models/dataset";
 import { Station } from 'src/app/core/models/station.model';
 
 import * as L from 'leaflet';
@@ -12,6 +12,8 @@ import { LocationService } from 'src/app/core/services/location-service';
 import { NotificationService } from 'src/app/core/services/notification.service';
 import { map, polyline } from 'leaflet';
 import { GameService } from 'src/app/core/services/game-service';
+import { Observable, Subscription } from 'rxjs';
+import { StationBarComponent } from "../station-bar/station-bar.component";
 
 
 
@@ -19,11 +21,20 @@ import { GameService } from 'src/app/core/services/game-service';
   selector: 'app-overview',
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, CommonModule]
+  imports: [IonContent, CommonModule, StationBarComponent]
 })
 export class OverviewComponent  implements OnInit, AfterViewInit {
 
-    private map!: L.Map
+    private map!: L.Map;
+    private path?: L.Polyline;
+    private trackingLine?: L.Polyline
+    private solvedLayer = L.featureGroup();
+    private unsolvedLayer = L.featureGroup();
+    private userLayer = L.featureGroup();
+    private commonLayer = L.featureGroup([this.solvedLayer, this.unsolvedLayer, this.userLayer]);
+    private activeStationMarker?: L.Marker;
+    public activeStation?: Station;
+    private activeStationObserver?: Subscription;
 
 
 
@@ -40,31 +51,52 @@ export class OverviewComponent  implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.map = L.map('map');
+    this.map = L.map('map')
     this.map.setView([51.9045, 10.4196], 13);
 
     
-    L.tileLayer.provider('MapBox', {
-    id: 'rangarian/cknynkupm0krp17qml0xbyw7c',
-    accessToken: 'pk.eyJ1IjoicmFuZ2FyaWFuIiwiYSI6ImNrZGVxNzNhODI5MTcyenM4dGR5bnZhb3UifQ.7WvcNEBQJn9iV42IiyG8rQ'
-    }).addTo(this.map);
+
 
     setTimeout(() => {
       this.map.invalidateSize();
     }, 100);
 
     //Draw the Path
-    let line = new L.Polyline(PathData.map( point => [point[1], point[0]] ), {color: 'blue'});
-    line.addTo(this.map);
-    (this.map as any)._line = line;
-    
-    this.setupStationObservers();
+
+
+    this.map.whenReady(() => {
+      console.log("Map loaded");
+
+      //Add layers
+
+
+      this.setupCenterControl();
+
+      //Draw initial path
+      this.path = new L.Polyline(PathData.map( point => [point[0], point[1]] ), {color: 'green'}).addTo(this.map);
+      
+
+      let shortcuts = Shortcuts;
+      shortcuts.forEach( (shortcut: Array<Array<number>>) => {
+        let shortcutLine = new L.Polyline(shortcut.map( point => [point[0], point[1]] ), {color: 'purple', dashArray: '5, 10'}).addTo(this.map);
+      });
+
+      let specialPoints = SpecialPoints;
+      this.drawSpecialMarkers(specialPoints, [30, 30]);
+      this.setupStationObservers();
+      this.setupLocation();
+      this.map.addLayer(this.commonLayer);
+    });
+
+    L.tileLayer.provider('MapBox', {
+    id: 'rangarian/cknynkupm0krp17qml0xbyw7c',
+    accessToken: 'pk.eyJ1IjoicmFuZ2FyaWFuIiwiYSI6ImNrZGVxNzNhODI5MTcyenM4dGR5bnZhb3UifQ.7WvcNEBQJn9iV42IiyG8rQ'
+    }).addTo(this.map);
 
 
     
     //Fit all to map
-    this.map.flyToBounds(line.getBounds(), {padding: [-140, -140]});
-    this.setupLocation();
+    //this.map.flyToBounds(line.getBounds(), {padding: [-140, -140]});
 
   }
   onResize(): void {
@@ -79,8 +111,8 @@ export class OverviewComponent  implements OnInit, AfterViewInit {
           if ((this.map as any)._markerLayer) {
             (this.map as any)._markerLayer.remove();
           }
-          this.drawStationMarkers(stationData.unsolved, 'assets/map/pin.svg', [30, 35]);
-          this.drawStationMarkers(stationData.solved, 'assets/map/pin_complete.svg', [30, 35]); 
+          this.drawStationMarkers(stationData.unsolved, 'assets/map/pin.svg', [30, 35], this.unsolvedLayer);
+          this.drawStationMarkers(stationData.solved, 'assets/map/pin_complete.svg', [30, 35], this.solvedLayer);
       },
       error: (error) => {
         console.error("Error updating station markers:", error);
@@ -88,9 +120,29 @@ export class OverviewComponent  implements OnInit, AfterViewInit {
     });
   }
 
-  drawStationMarkers(stations: Set<Station>, pinUrl: string, iconSize: [number, number]) {
+  drawSpecialMarkers(specialPoints: SpecialPoint[], iconSize: [number, number]) {
+    console.log("Drawing special point markers:", specialPoints);
+    specialPoints.forEach( (point: SpecialPoint) => {
+      const marker = L.marker(
+        [point.lat, point.lng],
+        { 
+          title: point.description,
+          riseOnHover: true,
+          // Add any additional marker options here
+          icon: L.icon({
+            iconUrl: 'assets/map/pin_parking.svg',
+            iconSize: iconSize,
+            iconAnchor:  [20,20],
+            popupAnchor: [-3, -76],
+          })
+         }
+      ).addTo(this.map);
+    });
+  }
+
+
+  drawStationMarkers(stations: Set<Station>, pinUrl: string, iconSize: [number, number], layer: L.FeatureGroup){
     console.log("Drawing station markers:", stations);
-    let markerLayer = L.layerGroup().addTo(this.map);
     stations.forEach( (station: Station) => {
       const marker = L.marker(
         [station.positionLat, station.positionLng],
@@ -100,14 +152,51 @@ export class OverviewComponent  implements OnInit, AfterViewInit {
           // Add any additional marker options here
           icon: L.icon({
             iconUrl: pinUrl,
-            iconAnchor: iconSize,
+            iconSize: iconSize,
+            iconAnchor:  [11,40],
             popupAnchor: [-3, -76],
           })
          }
-      ).addTo(markerLayer);
-      marker.on('click', (event) => this.router.navigate(['/station', station.id]));
+      ).addTo(layer);
+      //marker.on('click', (event) => this.router.navigate(['/station', station.id]));
+      marker.on('click', (event) => {
+        if(this.activeStation) this.activeStation = undefined;
+        if(this.activeStationObserver) this.activeStationObserver.unsubscribe();
+        this.activeStationMarker?.setIcon(L.icon({
+          iconUrl: 'assets/map/pin.svg',
+                      iconSize: iconSize,
+            iconAnchor:  [20,20],
+          popupAnchor: [-3, -76],
+        }));
+        this.activeStationMarker = event.target as L.Marker;
+        this.setupUserPath(this.userLayer.getBounds().getCenter());
+        this.activeStationObserver = this.locationService.setupDistanceObserver(this.activeStationMarker.getLatLng()).subscribe({
+          next: (inRadius) => {
+            console.log("User in radius of station", station.id, ":", inRadius);
+            if(inRadius) {
+              this.activeStationObserver?.unsubscribe();
+              this.router.navigate(['/station', station.id]);
+              this.notificationService.showSuccess("Station erreichbar!", `Du bist in der Nähe der Station "${station.title}". Klicke auf das Stations-Symbol, um die Aufgabe zu lösen!`);
+            }
+          },
+          error: (error) => {
+            console.error("Error observing distance to station:", error);
+          }
+        });
+        this.activeStationMarker.setIcon(L.icon({
+          iconUrl: 'assets/map/pin_active.svg',
+            iconSize: [iconSize[0] * 1.3, iconSize[1] * 1.3],
+            iconAnchor:  [17,46],
+          popupAnchor: [20, -76],
+        }))
+        this.activeStation = station;
+        
+
+        this.activeStationMarker.on('click', () => {
+          this.router.navigate(['/station', station.id]);
+        });
+      });
     });
-    (this.map as any)._markerLayer = markerLayer;
   }
   
 
@@ -119,36 +208,22 @@ export class OverviewComponent  implements OnInit, AfterViewInit {
         const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
       const accuracy = position.coords.accuracy;
 
-      // Add or update the accuracy circle
-      let accuracyCircle = (this.map as any)._accuracyCircle;
-      if (!accuracyCircle) {
-        accuracyCircle = L.circle(latLng, { radius: accuracy, color: 'blue', opacity: 0.2 }).addTo(this.map);
-        (this.map as any)._accuracyCircle = accuracyCircle;
-      } else {
-        accuracyCircle.setLatLng(latLng);
-        accuracyCircle.setRadius(accuracy);
-      }
+      this.userLayer.clearLayers();
 
-      // Add or update the user marker
-      let userMarker = (this.map as any)._userMarker;
-      if (!userMarker) {
-        userMarker = L.marker(latLng, {
+        L.circle(latLng, { radius: accuracy, color: 'blue', opacity: 0.2 }).addTo(this.userLayer);
+
+        L.marker(latLng, {
           icon: L.icon({
             iconUrl: 'assets/map/fox.svg',
             iconSize: [40, 40],
-            iconAnchor: [20, 35],
+            iconAnchor: [20, 40],
 
           }),
           zIndexOffset: 1000,
           attribution: 'User Location',
           
-        }).addTo(this.map);
-        (this.map as any)._userMarker = userMarker;
-        
-      } else {
-        userMarker.setLatLng(latLng);
-      }
-      this.setupUserPath();
+        }).addTo(this.userLayer);
+        this.setupUserPath(latLng);
       }
     }, error => {
         console.error("Error getting user position:", error);
@@ -169,10 +244,7 @@ export class OverviewComponent  implements OnInit, AfterViewInit {
       const div = L.DomUtil.create('div', 'leaflet-control-center leaflet-control leaflet-bar');
       div.innerHTML = '<a title="Zentriere Karte auf Benutzerposition">🦊</a>';
       div.onclick = () => {
-        let user = (this.map as any)._userMarker as L.Marker;
-        if (user) {
-          this.map.flyTo(user.getLatLng(), 16);
-        }
+        this.map.flyToBounds(this.userLayer.getBounds(), {padding: [50, 50]})
       };
       return div as HTMLElement;
     };
@@ -184,9 +256,9 @@ export class OverviewComponent  implements OnInit, AfterViewInit {
     })
     center2.onAdd = (map: L.Map) => {
       const div = L.DomUtil.create('div', 'leaflet-control-center leaflet-control leaflet-bar');
-      div.innerHTML = '<a title="Zentriere Karte auf Benutzerposition">🎯</a>';
+      div.innerHTML = '<a title="Zentriere Karte auf Pfad">🌲</a>';
       div.onclick = () => {
-        this.gameService.solveRandomStation();
+        this.map.flyToBounds(this.path!.getBounds(), {padding: [50, 50]})
       };
       return div as HTMLElement;
     };
@@ -196,22 +268,21 @@ export class OverviewComponent  implements OnInit, AfterViewInit {
 
   
 
-  setupUserPath() {
-    let user = (this.map as any)._userMarker as L.Marker;
-    if (!user) return;
-    let polyline = (this.map as any)._line as L.Polyline;
-    if (!polyline) return;
+  setupUserPath(user_position: L.LatLng ) {
+    if (!this.activeStationMarker) return;
 
-    let user_canvas_point = this.map.latLngToLayerPoint(user.getLatLng());
-    let closestPoint = polyline.closestLayerPoint(user_canvas_point);
-    let closestLatLng = this.map.layerPointToLatLng(closestPoint);
+
+    let user_canvas_point = this.map.latLngToLayerPoint(user_position);
+    console.log("User canvas point:", user_canvas_point);
+    if(user_canvas_point == null) return;
+
+    let closestPoint = this.activeStationMarker.getLatLng();
 
     let userPath = (this.map as any)._userPath as L.Polyline;
-    if (!userPath) {
-      userPath = L.polyline([user.getLatLng(), closestLatLng], {color: 'red', dashArray: '5, 10'}).addTo(this.map);
-      (this.map as any)._userPath = userPath;
+    if (!this.trackingLine) {
+      this.trackingLine = L.polyline([user_position, closestPoint], {color: 'red', dashArray: '5, 10'}).addTo(this.map);
     } else {
-      userPath.setLatLngs([user.getLatLng(), closestLatLng]);
+      this.trackingLine.setLatLngs([user_position, closestPoint]);
     }
   }
 

@@ -4,7 +4,7 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonIcon, IonButton, IonRouterLink } from '@ionic/angular/standalone';
+  IonIcon, IonButton, IonRouterLink, IonGrid, IonCol, IonRow, IonItem, IonRadio, IonLabel, IonList } from '@ionic/angular/standalone';
 import { LocationService } from 'src/app/core/services/location-service';
 import { Router, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -15,11 +15,8 @@ import { from, Observable, of } from 'rxjs';
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  imports: [ 
+  imports: [IonList, IonLabel, IonRadio, IonItem, IonRow, IonCol, IonGrid,  
     IonIcon,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonContent,
     IonIcon,
     CommonModule,
@@ -27,6 +24,8 @@ import { from, Observable, of } from 'rxjs';
 })
 
 export class HomePage {
+
+  acknowledgedRules = [false,false,false];
 
   step: 'intro' | 'explanation' | 'onboarding' = 'intro';
   navigation_allowed: Observable<boolean> = of(false);
@@ -45,9 +44,18 @@ export class HomePage {
 
   checkNavigationAllowed() {
     this.navigation_allowed = this.locationService.checkPermissionStatus()
+
   }
 
   navigateToMap() {
     this.router.navigate(['/map']);
+  }
+
+  acknowledgeRule(index: number) {
+    this.acknowledgedRules[index] = true;
+  }
+  
+  allRulesAcknowledged(): boolean {
+    return this.acknowledgedRules.every(ack => ack);
   }
 }

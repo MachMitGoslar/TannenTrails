@@ -15,7 +15,7 @@
   transition: all 0.3s ease-out;
 
   &.notification-success {
-    --notification-color: var(--ion-color-success);
+    --notification-color: white;
     --notification-bg: linear-gradient(135deg, var(--ion-color-success-tint), #c3e6cb 100%);
     --notification-border: #b8dacd;
     --icon-color: var(--ion-text-color-success);
@@ -84,7 +84,7 @@
 
   .notification-icon {
     font-size: 28px;
-    color: var(--icon-color);
+    color: white;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     animation: iconBounce 0.6s ease-out;
   }
@@ -98,14 +98,14 @@
     margin: 0 0 4px 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-color);
+    color: white;
     line-height: 1.3;
   }
 
   .notification-message {
     margin: 0;
     font-size: 0.95rem;
-    color: var(--text-color);
+    color: white;
     opacity: 0.8;
     line-height: 1.4;
     word-wrap: break-word;
