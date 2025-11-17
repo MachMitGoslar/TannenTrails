@@ -162,4 +162,55 @@ export class LocationService {
       })
     );
   }
+
+  /**
+   * Converts heading degrees to compass direction string
+   * @param degrees - Heading in degrees (0-360)
+   * @returns Compass direction string (N, NNE, NE, ENE, E, etc.)
+   */
+  degreesToCompass(degrees: number | null | undefined): string {
+    if (degrees === null || degrees === undefined) {
+      return 'Unknown';
+    }
+
+    // Normalize degrees to 0-360 range
+    const normalizedDegrees = ((degrees % 360) + 360) % 360;
+
+    // 16-point compass directions
+    const directions = [
+      'N', // 0° (North)
+      'NNO', // 22.5° (North-Northeast)
+      'NO', // 45° (Northeast)
+      'ONO', // 67.5° (East-Northeast)
+      'O', // 90° (East)
+      'OSO', // 112.5° (East-Southeast)
+      'SO', // 135° (Southeast)
+      'SSO', // 157.5° (South-Southeast)
+      'S', // 180° (South)
+      'SSW', // 202.5° (South-Southwest)
+      'SW', // 225° (Southwest)
+      'WSW', // 247.5° (West-Southwest)
+      'W', // 270° (West)
+      'WNW', // 292.5° (West-Northwest)
+      'NW', // 315° (Northwest)
+      'NNW', // 337.5° (North-Northwest)
+    ];
+
+    // Calculate the index (each direction covers 22.5 degrees)
+    const index = Math.round(normalizedDegrees / 22.5) % 16;
+    return directions[index];
+  }
+
+  /**
+   * Gets the current heading as a compass direction string
+   * @returns Observable of compass direction string
+   */
+  getCurrentCompassDirection(): Observable<string> {
+    return this.my_position$.pipe(
+      map(position => {
+        const heading = position?.coords?.heading;
+        return this.degreesToCompass(heading);
+      })
+    );
+  }
 }
