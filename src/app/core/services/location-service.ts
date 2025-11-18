@@ -121,6 +121,11 @@ export class LocationService {
         error => {
           console.error('Browser geolocation error:', error);
           this.my_position$!.error('Error watching location: ' + error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 5000,
         }
       );
     } else {

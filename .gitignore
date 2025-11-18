@@ -70,3 +70,9 @@ testem.log
 Thumbs.db
 
 www.zip
+
+src/environments/environment.ts
+src/environments/environment.prod.ts
+matters.txt
+claude.md
+memory/

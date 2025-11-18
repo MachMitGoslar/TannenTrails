@@ -9,5 +9,12 @@
   <div class="map-container">
     <div id="map" style="height: 500px; width: 100%"></div>
     <app-station-bar [station]="activeStation"></app-station-bar>
+
+    <!-- Progress Modal Floating Action Button -->
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button (click)="openProgressModal()" color="secondary" class="progress-fab">
+        <ion-icon name="trophy"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   </div>
 </ion-content>

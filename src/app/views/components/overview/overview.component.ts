@@ -1,6 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, AfterViewInit, HostListener, inject } from '@angular/core';
-import { IonContent, IonHeader, IonToolbar, IonTitle } from '@ionic/angular/standalone';
+import {
+  IonContent,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonFab,
+  IonFabButton,
+  IonIcon,
+} from '@ionic/angular/standalone';
 import {
   PathData,
   Shortcuts,
@@ -16,16 +24,20 @@ import 'leaflet-providers';
 import { Router } from '@angular/router';
 import { LocationService } from 'src/app/core/services/location-service';
 import { NotificationService } from 'src/app/core/services/notification.service';
+import { ProgressModalService } from 'src/app/core/services/progress-modal.service';
 import { map, polyline } from 'leaflet';
 import { GameService } from 'src/app/core/services/game-service';
 import { Observable, Subscription } from 'rxjs';
 import { StationBarComponent } from '../station-bar/station-bar.component';
+import { addIcons } from 'ionicons';
+import { trophy } from 'ionicons/icons';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-overview',
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
-  imports: [IonContent, CommonModule, StationBarComponent],
+  imports: [IonContent, IonFab, IonFabButton, IonIcon, CommonModule, StationBarComponent],
 })
 export class OverviewComponent implements OnInit, AfterViewInit {
   private map!: L.Map;
@@ -43,8 +55,11 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   public locationService = inject(LocationService);
   public notificationService = inject(NotificationService);
   public gameService = inject(GameService);
+  public progressModalService = inject(ProgressModalService);
 
-  constructor() {}
+  constructor() {
+    addIcons({ trophy });
+  }
 
   ngOnInit() {
     console.log('OverviewComponent initialized');
@@ -90,9 +105,8 @@ export class OverviewComponent implements OnInit, AfterViewInit {
 
     L.tileLayer
       .provider('MapBox', {
-        id: 'rangarian/cknynkupm0krp17qml0xbyw7c',
-        accessToken:
-          'pk.eyJ1IjoicmFuZ2FyaWFuIiwiYSI6ImNrZGVxNzNhODI5MTcyenM4dGR5bnZhb3UifQ.7WvcNEBQJn9iV42IiyG8rQ',
+        id: environment.mapboxStyleId,
+        accessToken: environment.mapboxToken,
       })
       .addTo(this.map);
 
@@ -108,9 +122,9 @@ export class OverviewComponent implements OnInit, AfterViewInit {
       next: stationData => {
         console.log('Updating station markers on map', stationData);
         // Clear existing markers
-        if ((this.map as any)._markerLayer) {
-          (this.map as any)._markerLayer.remove();
-        }
+        this.solvedLayer.clearLayers();
+        this.unsolvedLayer.clearLayers();
+
         this.drawStationMarkers(
           stationData.unsolved,
           'assets/map/pin.svg',
@@ -148,7 +162,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   drawStationMarkers(
-    stations: Set<Station>,
+    stations: Map<number, Station>,
     pinUrl: string,
     iconSize: [number, number],
     layer: L.FeatureGroup
@@ -275,6 +289,17 @@ export class OverviewComponent implements OnInit, AfterViewInit {
     };
     center2.addTo(this.map);
     (this.map as any)._centerControl = center2;
+  }
+
+  /**
+   * Open the progress modal to show user's achievements and station progress
+   */
+  async openProgressModal() {
+    try {
+      await this.progressModalService.openProgressModal(StationData.length);
+    } catch (error) {
+      console.error('Error opening progress modal:', error);
+    }
   }
 
   setupUserPath(user_position: L.LatLng) {
