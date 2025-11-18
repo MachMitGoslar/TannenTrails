@@ -165,7 +165,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   drawStationMarkers(
-    stations: Map<number, Station>,
+    stations: Map<string, Station>,
     pinUrl: string,
     iconSize: [number, number],
     layer: L.FeatureGroup

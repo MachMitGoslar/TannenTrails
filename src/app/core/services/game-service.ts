@@ -8,13 +8,12 @@ import { collection, Firestore, getDocs, query, where } from '@angular/fire/fire
   providedIn: 'root',
 })
 export class GameService {
-  private solvedStations: Map<number, Station> = new Map<number, Station>();
-  private unsolvedStations: Map<number, Station> = new Map<number, Station>();
+  private solvedStations: Map<string, Station> = new Map<string, Station>();
+  private unsolvedStations: Map<string, Station> = new Map<string, Station>();
 
   public $stations = new ReplaySubject<{
-    solved: Map<number, Station>;
-    current: Station | null;
-    unsolved: Map<number, Station>;
+    solved: Map<string, Station>;
+    unsolved: Map<string, Station>;
   }>(1);
 
   private db = inject(Firestore);
@@ -38,24 +37,22 @@ export class GameService {
       return;
     }
     const randomIndex = Math.floor(Math.random() * this.unsolvedStations.size);
-    const stationToSolve = this.unsolvedStations.get(unsolvedArray[randomIndex][0]);
+    const stationToSolve = this.unsolvedStations.get(String(randomIndex));
+    if (!stationToSolve) {
+      return;
+    }
     this.solveStation(stationToSolve);
-  }
-
-  setCurrentStation(station: Station): void {
-    this.currentStation = station;
-    this.publishState();
   }
 
   private publishState(): void {
     this.$stations.next({
       solved: this.solvedStations,
-      current: this.currentStation,
       unsolved: this.unsolvedStations,
     });
   }
+
   isStationSolved(station: Station): boolean {
-    return this.solvedStations.has(station);
+    return this.solvedStations.has(station.id);
   }
 
   private writeStateToFirestore(userId: string) {
