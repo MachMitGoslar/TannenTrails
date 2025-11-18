@@ -72,8 +72,11 @@ export class StationPage implements OnInit {
 
   constructor() {
     const stationId = this.route.snapshot.paramMap.get('id');
-    this.station = StationData.find(s => s.id === Number(stationId))!;
-    this.station.question = QuestionData[Number(stationId)];
+    if (stationId === null) {
+      throw new Error('Station ID is null');
+    }
+    this.station = StationData.find(s => s.id === stationId)!;
+    this.station.question = QuestionData[stationId];
     if (this.gameService.isStationSolved(this.station)) {
       this.questionAnsweredSuccessfully = true;
       this.successAnimationDone = true;

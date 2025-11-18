@@ -121,6 +121,11 @@ export class LocationService {
         error => {
           console.error('Browser geolocation error:', error);
           this.my_position$!.error('Error watching location: ' + error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 5000,
         }
       );
     } else {
@@ -152,11 +157,11 @@ export class LocationService {
     }
   }
 
-  setupDistanceObserver(latLng: L.LatLng): Observable<boolean> {
+  setupDistanceObserver(latLng: L.LatLng, radius: number): Observable<boolean> {
     return this.my_position$.pipe(
       map(position => {
         if (position) {
-          return insideCircle(position.coords, { lat: latLng.lat, lon: latLng.lng }, 50);
+          return insideCircle(position.coords, { lat: latLng.lat, lon: latLng.lng }, radius);
         }
         return false;
       })

@@ -172,135 +172,135 @@ export var SpecialPoints: SpecialPoint[] = [
 
 export var StationData: Station[] = [
   {
-    id: 1,
+    id: '1',
     title: 'Totholz als Lebensraum',
     positionLat: 51.901052,
     positionLng: 10.414692,
     description: 'Erkunde eine Spechthöhle und erfahre warum Totholz wichtig ist ',
-    radius: 50,
-    nextStationId: 2,
+    radius: 25,
+    nextStationId: '2',
     imageUrl: 'assets/stations/1.jpg',
   },
   {
-    id: 2,
+    id: '2',
     title: 'Tierische Kostbarkeiten',
     positionLat: 51.899703,
     positionLng: 10.413321,
     description: 'Lerne seltene Wildtiere kennen, die hier heimisch sind',
-    radius: 50,
-    nextStationId: 3,
+    radius: 25,
+    nextStationId: '3',
     imageUrl: 'assets/stations/2.jpg',
   },
   {
-    id: 11,
+    id: '11',
     title: 'Der Fuchsbau',
     positionLat: 51.899387,
     positionLng: 10.413544,
     description: 'Schau nach wie ein Fuchs lebt und erkunde seinen Bau',
-    radius: 50,
+    radius: 25,
     imageUrl: 'assets/stations/3.jpg',
   },
   {
-    id: 3,
+    id: '3',
     title: 'Holz als nachwachsender Rohstoff',
     positionLat: 51.898761,
     positionLng: 10.411736,
     description: 'Erfahre wozu Holz als Rohstoff wichtig ist',
-    radius: 50,
-    nextStationId: 4,
+    radius: 25,
+    nextStationId: '4',
     imageUrl: 'assets/stations/4.jpg',
   },
   {
-    id: 4,
+    id: '4',
     title: 'Früher Bergbau, heute Fledermausschutz',
     positionLat: 51.898212,
     positionLng: 10.410456,
     description: 'Entdecke wie aus alten Bergwerkstollen neue Fledermausquartiere werden',
-    radius: 50,
-    nextStationId: 5,
+    radius: 25,
+    nextStationId: '5',
     imageUrl: 'assets/stations/5.jpg',
   },
   {
-    id: 5,
+    id: '5',
     title: 'Der Wald im Wandel',
     positionLat: 51.89771489899493,
     positionLng: 10.409740794258363,
     description: 'Schau, wie aus Fichtenwäldern ein bunter Mischwald entsteht',
-    radius: 50,
-    nextStationId: 6,
+    radius: 25,
+    nextStationId: '6',
     imageUrl: 'assets/stations/6.jpg',
   },
   {
-    id: 6,
+    id: '6',
     title: 'Wald als Quelle',
     positionLat: 51.89648452098621,
     positionLng: 10.408977073782626,
     description: 'Erfahre wie der Wald der Stadt Trinkwasser liefert',
-    radius: 50,
-    nextStationId: 7,
+    radius: 25,
+    nextStationId: '7',
     imageUrl: 'assets/stations/7.jpg',
   },
   {
-    id: 7,
+    id: '7',
     title: 'Waldxylophon',
     description: 'Probiere aus wie man sich früher im Wald verständigt hat',
     positionLat: 51.89586077968835,
     positionLng: 10.40810427708642,
-    radius: 50,
-    nextStationId: 8,
+    radius: 25,
+    nextStationId: '8',
     imageUrl: 'assets/stations/8.jpg',
   },
   {
-    id: 8,
+    id: '8',
     title: 'Tierhochsprung',
     description: 'Finde heraus wie hoch Goslars Wildtiere springen können',
-    radius: 50,
-    nextStationId: 9,
+    radius: 25,
+    nextStationId: '9',
     positionLat: 51.896223965437215,
     positionLng: 10.409613068922155,
     imageUrl: 'assets/stations/9.jpg',
   },
   {
-    id: 9,
+    id: '9',
     title: 'Wald mit Wild – Die Jagd',
     description: 'Geh selbst auf Jagd und und entdecke Goslars Wildtiere',
-    radius: 50,
-    nextStationId: 10,
+    radius: 25,
+    nextStationId: '10',
     positionLat: 51.89688434561153,
     positionLng: 10.410368878181568,
     imageUrl: 'assets/stations/10.jpg',
   },
   {
-    id: 10,
+    id: '10',
     title: 'Fotorahmen',
     description:
       'Mach ein Foto im Bilderrahmen und poste es unter dem Hashtag #goslarswaldimwandel',
-    radius: 50,
+    radius: 25,
     positionLat: 51.897638628226225,
     positionLng: 10.411594207987454,
     imageUrl: 'assets/stations/11.jpg',
-    nextStationId: 11,
+    nextStationId: '11',
   },
 ];
 
-export var QuestionData: { [stationId: number]: Station['question'] } = {
-  2: new MultipleChoiceQuestion('q1', {
+export var QuestionData: { [stationId: string]: Station['question'] } = {
+  '2': new MultipleChoiceQuestion('q1', {
     questionText: 'Welcher Stadtwald-Bewohner ist besonders geschützt und ist ein Allesfresser?',
     options: ['Wildkatze', 'Luchs', 'Gartenschläfer', 'Eichelhäher'],
     correctOptionIndex: 2,
   }),
-  3: new MultipleChoiceQuestion('q2', {
+  '3': new MultipleChoiceQuestion('q2', {
     questionText:
       'Wie viel Holz muss nachwachsen, um den Co2-Ausstoß eines Fluges pro Person von Berlin nach Hannover auszugleichen?',
     options: ['0,3 kg', '3 kg', '30 kg', '300 kg'],
     correctOptionIndex: 2,
   }),
-  4: new MultipleChoiceQuestion('q3', {
+  '4': new MultipleChoiceQuestion('q3', {
     questionText: 'Wie viele kleine Fledermäuse kannst du in und um ihr Winterquartier finden?',
     options: ['1', '2', '3', '4'],
     correctOptionIndex: 3,
   }),
-  6: new MultipleChoiceQuestion('q4', {
+  '6': new MultipleChoiceQuestion('q4', {
     questionText: 'Wie beeinflusst der Wald das Wasser?',
     options: [
       'Regen fließt durch den Wald schneller in die Stadt Goslar',
@@ -310,7 +310,7 @@ export var QuestionData: { [stationId: number]: Station['question'] } = {
     ],
     correctOptionIndex: 1,
   }),
-  8: new MultipleChoiceQuestion('q5', {
+  '8': new MultipleChoiceQuestion('q5', {
     questionText: 'Warum baut die Stadtforst hohe Zäune im Wald?',
     options: [
       'Um gepflanzte Bäume vor dem Reh- und Rotwild zu schützen',
@@ -320,12 +320,12 @@ export var QuestionData: { [stationId: number]: Station['question'] } = {
     ],
     correctOptionIndex: 0,
   }),
-  5: new MultipleChoiceQuestion('q6', {
+  '5': new MultipleChoiceQuestion('q6', {
     questionText: 'Welchen Spitznamen trägt der Eichelhäher?',
     options: ['Walddieb', 'Waldpolitesse', 'Räuber des Waldes', 'Gärtner des Waldes'],
     correctOptionIndex: 3,
   }),
-  9: new MultipleChoiceQuestion('q7', {
+  '9': new MultipleChoiceQuestion('q7', {
     questionText: 'Warum ist die Jagd für den Wald so wichtig?',
     options: [
       'Damit junge Bäume nicht gefressen werden',
@@ -335,22 +335,22 @@ export var QuestionData: { [stationId: number]: Station['question'] } = {
     ],
     correctOptionIndex: 0,
   }),
-  1: new MultipleChoiceQuestion('q8', {
+  '1': new MultipleChoiceQuestion('q8', {
     questionText: 'Was frisst ein Buntspecht?',
     options: ['Holz', 'Eicheln', 'Rinde', 'Borkenkäfer-Larven'],
     correctOptionIndex: 3,
   }),
-  7: new MultipleChoiceQuestion('q9', {
+  '7': new MultipleChoiceQuestion('q9', {
     questionText: 'Mit welchem Hilfsmittel verständigten sich die Köhler früher im Wald?',
     options: ['Hulli Bulli', 'Hubba Bubba', 'Hille Bille', 'Halli Hallo'],
     correctOptionIndex: 2,
   }),
-  11: new MultipleChoiceQuestion('q10', {
+  '11': new MultipleChoiceQuestion('q10', {
     questionText: 'Wen findest du als Untermieter in einem Fuchsbau?',
     options: ['Dachs', 'Kaninchen', 'Igel', 'Gartenschläfer'],
     correctOptionIndex: 1,
   }),
-  10: new ExternalQuestion('q11', {
+  '10': new ExternalQuestion('q11', {
     questionText:
       'Mache ein Foto im Fotorahmen und poste es unter dem Hashtag #goslarswaldimwandel',
   }),
