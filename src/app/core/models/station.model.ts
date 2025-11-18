@@ -2,7 +2,7 @@ import { documentId } from '@angular/fire/firestore';
 import { MultipleChoiceQuestion, Question } from './questions.model';
 
 export class Station {
-  id: number;
+  id: string;
   title: string = '';
   description: string = '';
   imageUrl: string = '';
@@ -12,9 +12,9 @@ export class Station {
   radius: number = 50;
 
   question?: Question = new MultipleChoiceQuestion('test');
-  nextStationId?: number = 0;
+  nextStationId?: string = '';
 
-  constructor(id: number, init?: Partial<Station>) {
+  constructor(id: string, init?: Partial<Station>) {
     this.id = id;
     Object.assign(this, init);
   }

@@ -88,6 +88,9 @@ export class OverviewComponent implements OnInit, AfterViewInit {
         { color: 'green' }
       ).addTo(this.map);
 
+      let map_center = this.path.getBounds().getCenter();
+      this.map.setView(map_center, 15);
+
       let shortcuts = Shortcuts;
       shortcuts.forEach((shortcut: Array<Array<number>>) => {
         let shortcutLine = new L.Polyline(
@@ -188,14 +191,14 @@ export class OverviewComponent implements OnInit, AfterViewInit {
           L.icon({
             iconUrl: 'assets/map/pin.svg',
             iconSize: iconSize,
-            iconAnchor: [20, 20],
+            iconAnchor: [11, 40],
             popupAnchor: [-3, -76],
           })
         );
         this.activeStationMarker = event.target as L.Marker;
         this.setupUserPath(this.userLayer.getBounds().getCenter());
         this.activeStationObserver = this.locationService
-          .setupDistanceObserver(this.activeStationMarker.getLatLng())
+          .setupDistanceObserver(this.activeStationMarker.getLatLng(), station.radius)
           .subscribe({
             next: inRadius => {
               console.log('User in radius of station', station.id, ':', inRadius);
@@ -204,7 +207,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
                 this.router.navigate(['/station', station.id]);
                 this.notificationService.showSuccess(
                   'Station erreichbar!',
-                  `Du bist in der Nähe der Station "${station.title}". Klicke auf das Stations-Symbol, um die Aufgabe zu lösen!`
+                  `Du bist in der Nähe der Station "${station.title}". Jetzt kannst du die Aufgabe lösen! Bestimmt helfen dir die Informationen auf der Tafel weiter.`
                 );
               }
             },
@@ -212,6 +215,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
               console.error('Error observing distance to station:', error);
             },
           });
+
         this.activeStationMarker.setIcon(
           L.icon({
             iconUrl: 'assets/map/pin_active.svg',
@@ -220,11 +224,17 @@ export class OverviewComponent implements OnInit, AfterViewInit {
             popupAnchor: [20, -76],
           })
         );
+        L.circle(this.activeStationMarker.getLatLng(), {
+          radius: station.radius,
+          color: 'green',
+          opacity: 0.2,
+        }).addTo(this.unsolvedLayer);
+
         this.activeStation = station;
 
-        this.activeStationMarker.on('click', () => {
-          this.router.navigate(['/station', station.id]);
-        });
+        // this.activeStationMarker.on('click', () => {
+        //   this.router.navigate(['/station', station.id]);
+        // });
       });
     });
   }
