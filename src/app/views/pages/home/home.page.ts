@@ -1,32 +1,25 @@
 import { Component, inject } from '@angular/core';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
   IonIcon,
-  IonButton,
-  IonRouterLink,
   IonGrid,
   IonCol,
   IonRow,
   IonItem,
   IonRadio,
   IonLabel,
-  IonList,
 } from '@ionic/angular/standalone';
 import { LocationService } from 'src/app/core/services/location-service';
-import { Router, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from 'src/app/core/services/notification.service';
-import { from, Observable, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   imports: [
-    IonList,
     IonLabel,
     IonRadio,
     IonItem,
