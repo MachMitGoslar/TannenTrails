@@ -128,12 +128,18 @@ export class OverviewComponent implements OnInit, AfterViewInit {
       this.prefetchTiles();
     });
 
-    L.tileLayer
-      .provider('MapBox', {
+    this.offlineTileLayer = tileLayerOffline(
+      'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
+      {
         id: environment.mapboxStyleId,
         accessToken: environment.mapboxToken,
-      })
-      .addTo(this.map);
+        tileSize: 512,
+        zoomOffset: -1,
+        crossOrigin: true,
+        attribution:
+          '© <a href="https://www.mapbox.com/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      } as L.TileLayerOptions
+    ).addTo(this.map);
 
     //Fit all to map
     //this.map.flyToBounds(line.getBounds(), {padding: [-140, -140]});
