@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Progress Overview</ion-title>
+    <ion-title>Mein Fortschritt</ion-title>
     <ion-button slot="end" fill="clear" (click)="closeModal()">
       <ion-icon name="close"></ion-icon>
     </ion-button>
@@ -11,7 +11,7 @@
   <!-- Station Progress Section -->
   <ion-card class="progress-card">
     <ion-card-header>
-      <ion-card-title>Station Progress</ion-card-title>
+      <ion-card-title>Stationsfortschritt</ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <div class="progress-gauge">
@@ -20,16 +20,16 @@
             <div class="gauge-fill" [style.--progress]="progressPercentage + '%'"></div>
             <div class="gauge-content">
               <div class="progress-text">
-                <span class="completed">{{ completedStations }}</span>
+                <span class="completed">{{ completedStations | async }}</span>
                 <span class="divider">/</span>
                 <span class="total">{{ totalStations }}</span>
               </div>
-              <div class="stations-label">Stations</div>
+              <div class="stations-label">Stationen</div>
             </div>
           </div>
         </div>
-        <ion-text [color]="getProgressColor()">
-          <p class="progress-percentage">{{ progressPercentage }}% Complete</p>
+        <ion-text [color]="getProgressColor(progressPercentage | async)">
+          <p class="progress-percentage">{{ progressPercentage | async }}% erledigt</p>
         </ion-text>
       </div>
     </ion-card-content>
@@ -40,7 +40,7 @@
     <!-- User Stats Card -->
     <ion-card class="stats-card" *ngIf="userStats">
       <ion-card-header>
-        <ion-card-title>Your Achievements</ion-card-title>
+        <ion-card-title>Deine Erfolge</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-grid>
@@ -50,7 +50,7 @@
                 <ion-icon name="trophy" color="warning"></ion-icon>
                 <div class="stat-content">
                   <div class="stat-value">{{ userStats.totalPoints || 0 }}</div>
-                  <div class="stat-label">Points</div>
+                  <div class="stat-label">Punkte</div>
                 </div>
               </div>
             </ion-col>
@@ -69,8 +69,8 @@
               <div class="stat-item">
                 <ion-icon name="checkmark-circle" color="success"></ion-icon>
                 <div class="stat-content">
-                  <div class="stat-value">{{ userStats.questsCompleted || 0 }}</div>
-                  <div class="stat-label">Quests</div>
+                  <div class="stat-value">{{ (completedStations | async) || 0 }}</div>
+                  <div class="stat-label">Aufgaben</div>
                 </div>
               </div>
             </ion-col>
@@ -79,7 +79,7 @@
                 <ion-icon name="person" color="secondary"></ion-icon>
                 <div class="stat-content">
                   <div class="stat-value">{{ badges.length }}</div>
-                  <div class="stat-label">Badges</div>
+                  <div class="stat-label">Abzeichen</div>
                 </div>
               </div>
             </ion-col>
@@ -95,7 +95,7 @@
           <ion-progress-bar [value]="getLevelProgress().percentage / 100" color="primary">
           </ion-progress-bar>
           <ion-text color="medium">
-            <small>Next level in {{ 100 - getLevelProgress().percentage }}%</small>
+            <small>Nächstes Level in {{ 100 - getLevelProgress().percentage }}%</small>
           </ion-text>
         </div>
       </ion-card-content>
@@ -104,7 +104,7 @@
     <!-- Badges Section -->
     <ion-card class="badges-card" *ngIf="badges.length > 0">
       <ion-card-header>
-        <ion-card-title>Earned Badges</ion-card-title>
+        <ion-card-title>Verdiente Abzeichen</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <div class="badges-grid">
@@ -131,68 +131,93 @@
     <ion-card class="no-badges-card" *ngIf="badges.length === 0">
       <ion-card-content class="ion-text-center">
         <ion-icon name="trophy" color="medium" size="large"></ion-icon>
-        <h3>No badges yet</h3>
-        <p>Complete quests and explore stations to earn your first badges!</p>
+        <h3>Noch keine Abzeichen</h3>
+        <p>Löse Aufgaben und erkunde Stationen, um deine ersten Abzeichen zu verdienen!</p>
       </ion-card-content>
     </ion-card>
   </div>
 
-  <!-- User is not authenticated - Show login form -->
+  <div class="logout-section" *ngIf="isAuthenticated && !isProduction">
+    <ion-button expand="block" color="danger" (click)="logout()">
+      <ion-icon name="log-out" slot="start"></ion-icon>
+      Abmelden
+    </ion-button>
+  </div>
+
+  <!-- Login section — hidden in production -->
   <ng-template #loginSection>
-    <ion-card class="login-card">
-      <ion-card-header>
-        <ion-card-title>Sign In to View Badges</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div *ngIf="!showLoginForm; else loginForm" class="login-prompt">
-          <ion-text color="medium">
-            <p>Sign in to track your progress, earn badges, and save your achievements!</p>
-          </ion-text>
-          <ion-button expand="block" (click)="showLogin()">
-            <ion-icon name="log-in" slot="start"></ion-icon>
-            Sign In
-          </ion-button>
-        </div>
-
-        <ng-template #loginForm>
-          <form (ngSubmit)="onLogin()">
-            <ion-item>
-              <ion-icon name="mail" slot="start"></ion-icon>
-              <ion-input [(ngModel)]="email" name="email" type="email" placeholder="Email" required>
-              </ion-input>
-            </ion-item>
-
-            <ion-item>
-              <ion-icon name="lock-closed" slot="start"></ion-icon>
-              <ion-input
-                [(ngModel)]="password"
-                name="password"
-                type="password"
-                placeholder="Password"
-                required
-              >
-              </ion-input>
-            </ion-item>
-
-            <!-- Error Message -->
-            <ion-text color="danger" *ngIf="errorMessage">
-              <p class="error-message">{{ errorMessage }}</p>
+    <div *ngIf="!isProduction">
+      <ion-card class="login-card">
+        <ion-card-header>
+          <ion-card-title>Anmelden für Abzeichen</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div *ngIf="!showLoginForm; else loginForm" class="login-prompt">
+            <ion-text color="medium">
+              <p>Melde dich an, um deinen Fortschritt zu speichern und Abzeichen zu sammeln!</p>
             </ion-text>
+            <ion-button expand="block" (click)="showLogin()">
+              <ion-icon name="log-in" slot="start"></ion-icon>
+              Anmelden
+            </ion-button>
+            <ion-text> ODER </ion-text>
+            <ion-button expand="block" (click)="loginWithOICD()">
+              <ion-icon name="cloud-outline" slot="start"></ion-icon>
+              Mit Nextcloud anmelden
+            </ion-button>
+          </div>
 
-            <!-- Action Buttons -->
-            <div class="login-actions">
-              <ion-button expand="block" type="submit" [disabled]="isLoading">
-                <ion-spinner *ngIf="isLoading" slot="start"></ion-spinner>
-                Sign In
-              </ion-button>
+          <ng-template #loginForm>
+            <form (ngSubmit)="onLogin()">
+              <ion-item>
+                <ion-icon name="mail" slot="start"></ion-icon>
+                <ion-input
+                  [(ngModel)]="email"
+                  name="email"
+                  type="email"
+                  placeholder="E-Mail"
+                  required
+                >
+                </ion-input>
+              </ion-item>
 
-              <ion-button expand="block" fill="clear" (click)="hideLogin()" [disabled]="isLoading">
-                Cancel
-              </ion-button>
-            </div>
-          </form>
-        </ng-template>
-      </ion-card-content>
-    </ion-card>
+              <ion-item>
+                <ion-icon name="lock-closed" slot="start"></ion-icon>
+                <ion-input
+                  [(ngModel)]="password"
+                  name="password"
+                  type="password"
+                  placeholder="Passwort"
+                  required
+                >
+                </ion-input>
+              </ion-item>
+
+              <!-- Error Message -->
+              <ion-text color="danger" *ngIf="errorMessage">
+                <p class="error-message">{{ errorMessage }}</p>
+              </ion-text>
+
+              <!-- Action Buttons -->
+              <div class="login-actions">
+                <ion-button expand="block" type="submit" [disabled]="isLoading">
+                  <ion-spinner *ngIf="isLoading" slot="start"></ion-spinner>
+                  Anmelden
+                </ion-button>
+
+                <ion-button
+                  expand="block"
+                  fill="clear"
+                  (click)="hideLogin()"
+                  [disabled]="isLoading"
+                >
+                  Abbrechen
+                </ion-button>
+              </div>
+            </form>
+          </ng-template>
+        </ion-card-content>
+      </ion-card>
+    </div>
   </ng-template>
 </ion-content>

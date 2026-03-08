@@ -33,12 +33,16 @@ import {
   star,
   person,
   logIn,
+  logOut,
   mail,
   lockClosed,
+  cloudOutline,
 } from 'ionicons/icons';
+import { environment } from 'src/environments/environment';
 import { AuthService, AuthError } from '../../../core/services/auth.service';
 import { BadgeService } from '../../../core/services/badges.service';
-import { Subscription } from 'rxjs';
+import { map, Observable, Subscription } from 'rxjs';
+import { GameService } from 'src/app/core/services/game-service';
 
 @Component({
   selector: 'app-progress-modal',
@@ -47,7 +51,6 @@ import { Subscription } from 'rxjs';
   imports: [
     CommonModule,
     FormsModule,
-    IonModal,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -74,11 +77,12 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private badgeService = inject(BadgeService);
   private modalController = inject(ModalController);
+  private gameService = inject(GameService);
 
   // Progress data
   totalStations = 10; // This should be configurable based on the actual path
-  completedStations = 0;
-  progressPercentage = 0;
+  completedStations: Observable<number> = new Observable<number>();
+  progressPercentage: Observable<number> = new Observable<number>();
 
   // User state
   isAuthenticated = false;
@@ -94,6 +98,8 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
+  isProduction = environment.production;
+
   constructor() {
     addIcons({
       close,
@@ -102,8 +108,10 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
       star,
       person,
       'log-in': logIn,
+      'log-out': logOut,
       mail,
       'lock-closed': lockClosed,
+      'cloud-outline': cloudOutline,
     });
   }
 
@@ -117,6 +125,7 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
   }
 
   private setupSubscriptions() {
+    //this.completedStations = this.gameService.solvedStation.size;
     // Subscribe to authentication state
     const authSub = this.authService.user$.subscribe(user => {
       this.isAuthenticated = !!user;
@@ -129,6 +138,12 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
     });
     this.subscriptions.push(authSub);
 
+    this.completedStations = this.gameService.$stations.pipe(map(stations => stations.solved.size));
+
+    this.progressPercentage = this.completedStations.pipe(
+      map(completed => this.calculateProgress(completed, this.totalStations))
+    );
+
     // Subscribe to badges
     const badgesSub = this.badgeService.badges$.subscribe(badges => {
       this.badges = badges || [];
@@ -138,7 +153,6 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
     // Subscribe to user stats
     const statsSub = this.badgeService.userStats$.subscribe(stats => {
       this.userStats = stats;
-      this.calculateProgress();
     });
     this.subscriptions.push(statsSub);
 
@@ -164,24 +178,24 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
   private clearUserData() {
     this.userStats = null;
     this.badges = [];
-    this.completedStations = 0;
-    this.progressPercentage = 0;
+    this.completedStations = new Observable<number>();
+    this.progressPercentage = new Observable<number>();
     this.email = '';
     this.password = '';
     this.errorMessage = '';
   }
 
-  private calculateProgress() {
+  private calculateProgress(completedStations: number, totalStations: number) {
     // Use user stats to calculate progress if available
-    if (this.userStats && this.userStats.stationsVisited) {
-      this.completedStations = this.userStats.stationsVisited;
-    } else {
-      // Default progress calculation based on badges or other data
-      this.completedStations =
-        this.badges.length > 0 ? Math.min(this.badges.length, this.totalStations) : 0;
-    }
+    // if (this.userStats && this.userStats.stationsVisited) {
+    //   this.completedStations = this.userStats.stationsVisited;
+    // } else {
+    //   // Default progress calculation based on badges or other data
+    //   completedStations =
+    //     this.badges.length > 0 ? Math.min(this.badges.length, this.totalStations) : 0;
+    // }
 
-    this.progressPercentage = Math.round((this.completedStations / this.totalStations) * 100);
+    return Math.round((completedStations / totalStations) * 100);
   }
 
   /**
@@ -225,9 +239,10 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
   /**
    * Get progress color based on completion percentage
    */
-  getProgressColor(): string {
-    if (this.progressPercentage >= 80) return 'success';
-    if (this.progressPercentage >= 50) return 'warning';
+  getProgressColor(progressPercentage: number | null): string {
+    if (progressPercentage === null) return 'primary';
+    if (progressPercentage >= 80) return 'success';
+    if (progressPercentage >= 50) return 'warning';
     return 'primary';
   }
 
@@ -250,6 +265,10 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
       next: currentLevel + 1,
       percentage: Math.min(percentage, 100),
     };
+  }
+
+  logout() {
+    this.authService.signOut();
   }
 
   /**
@@ -292,5 +311,9 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
     } catch {
       return '';
     }
+  }
+
+  loginWithOICD() {
+    this.authService.loginWithOICD();
   }
 }

@@ -60,14 +60,16 @@ TannenTails/
 │   ├── app/
 │   │   ├── core/                    # Core services and models
 │   │   │   ├── models/              # Data models
-│   │   │   │   ├── note.model.ts
-│   │   │   │   ├── quest.model.ts
-│   │   │   │   ├── questions.model.ts
-│   │   │   │   └── station.model.ts
+│   │   │   │   ├── dataset.ts       # Static trail data (stations, path, questions)
+│   │   │   │   ├── station.model.ts
+│   │   │   │   ├── badge.ts
+│   │   │   │   └── questions.model.ts
 │   │   │   └── services/            # Business logic services
+│   │   │       ├── game-service.ts
 │   │   │       ├── location-service.ts
-│   │   │       ├── notification.service.ts
-│   │   │       └── game-service.ts
+│   │   │       ├── auth.service.ts
+│   │   │       ├── badges.service.ts
+│   │   │       └── notification.service.ts
 │   │   ├── views/                   # UI components and pages
 │   │   │   ├── components/          # Reusable components
 │   │   │   │   ├── animations/
@@ -152,11 +154,6 @@ ionic cap open ios
 npm test
 ```
 
-### E2E Tests ausführen
-```bash
-npm run e2e
-```
-
 ### Linting
 ```bash
 npm run lint
@@ -190,8 +187,9 @@ npm run lint
 ### GPS & Standorterkennung
 - Native Geolocation API (Web)
 - Capacitor Geolocation (Mobile)
-- Standort-basierte Station Detection
+- Standort-basierte Station Detection (25 m Radius)
 - Intelligente Permissions-Verwaltung
+- **GPS Mock Mode** — `LocationService.watchPosition(true)` spielt die aufgezeichneten Pfad-Koordinaten ab (1 s Takt), um den Trail ohne physische Bewegung zu testen
 
 ## 🔔 Notification System
 
@@ -210,14 +208,30 @@ npm run lint
 
 ### Interaktive Stationen
 - Multiple Choice Fragen
-- True/False Fragen  
-- Schätzfragen mit Toleranz
+- Externe Aufgaben (Foto posten, etc.)
 - Sofortiges visuelles Feedback
 
 ### Fortschritts-Tracking
 - Besuchte Stationen merken
 - Erfolgreiche Antworten speichern
 - Gesamtfortschritt anzeigen
+
+## Firebase & Backend
+
+### Authentication
+- **Firebase Auth** — E-Mail/Passwort sowie OIDC via **Goslar-ID** (`oidc.goslar_id`)
+- `AuthService` wraps alle Auth-Operationen mit Fehlerbehandlung
+
+### Firestore Datenstruktur
+```
+users/{uid}/badges/          # Verdiente Badges des Nutzers
+badgeTemplates/{badgeId}/    # Badge-Vorlagen (Titel, Bild, Text)
+```
+
+### Badge System
+- `BadgeService` lädt Badges nach Login automatisch
+- Jede Station hat eine optionale `badgeId`, die nach dem Lösen vergeben wird
+- `Badge.fromFirestore()` verknüpft User-Badge-Daten mit dem Template
 
 ## 🔧 Konfiguration
 
@@ -226,13 +240,20 @@ npm run lint
 // src/environments/environment.ts
 export const environment = {
   production: false,
-  mapConfig: {
-    defaultZoom: 15,
-    maxZoom: 18,
-    tileProvider: 'OpenStreetMap'
-  }
+  googleMapsApiKey: '...',
+  firebaseConfig: {
+    apiKey: '...',
+    authDomain: '...',
+    projectId: '...',
+    storageBucket: '...',
+    messagingSenderId: '...',
+    appId: '...',
+    databaseId: 'bridge',
+  },
 };
 ```
+
+Do not commit real API keys. Replace values with your own Firebase project credentials.
 
 ### Capacitor Config
 ```typescript

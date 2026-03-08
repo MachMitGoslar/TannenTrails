@@ -6,18 +6,6 @@ import { doc, FieldValue, getDoc, Timestamp } from '@firebase/firestore';
 // Badge Types
 export type BadgeType = 'normal' | 'tiered' | 'collection' | 'repeating';
 
-// Base Badge Template Interface
-export interface BadgeTemplateDB {
-  id?: string;
-  name: string;
-  description: string;
-  imageUrl: string;
-  category: string[];
-  badgeType: BadgeType;
-  tierConfig?: Record<number, TierConfig> | null;
-  groupConfig?: GroupConfig | null;
-}
-
 // Tier Configuration for Tiered Badges
 export interface TierConfig {
   amount: number;
@@ -29,40 +17,25 @@ export interface GroupConfig {
   requiredBadges: string[];
 }
 
-// User Earned Badge Interface
-export interface UserEarnedBadgeDB {
-  id?: string;
-  userId: string;
-  badgeTemplateId: string;
-  badgeType: BadgeType;
-  isCompleted: boolean;
-  earnedAt?: Timestamp | FieldValue;
-  metadata?: Record<string, any>;
-  // Tiered Badge Properties
-  currentProgress?: number;
-  currentTier?: number;
-  maxTier?: number;
-  tierRequirements?: number[];
-  lastProgressAt?: Timestamp;
-}
-
 export class Badge {
   public id?: string;
   public title: string;
-  public description: string;
+  public text_awarded: string;
+  public text_condition: string;
   public imageUrl: string;
   public isCompleted?: boolean;
   public earnedAt?: Date;
   public currentProgress?: number;
   public currentTier?: number;
-  public maxTier?: number;
-  public tierRequirements?: number[];
+  public maxTier?: TierConfig;
+  public tierRequirements?: Map<number, TierConfig>;
   public lastProgressAt?: Date;
 
   constructor(init?: Partial<Badge>) {
     Object.assign(this, init);
     this.title = init?.title || '';
-    this.description = init?.description || '';
+    this.text_awarded = init?.text_awarded || '';
+    this.text_condition = init?.text_condition || '';
     this.imageUrl = init?.imageUrl || '';
   }
 
@@ -72,7 +45,7 @@ export class Badge {
       return Promise.reject('No data found in badge document');
     }
 
-    return getDoc(doc(firestore, 'badges/' + documentSnapshot.id))
+    return getDoc(doc(firestore, 'badgeTemplates/' + documentSnapshot.id))
       .then(docSnap => {
         if (docSnap.exists()) {
           const badgeData = docSnap.data();
@@ -88,6 +61,9 @@ export class Badge {
             if (tierConfig[currentTier] && tierConfig[currentTier].imageURL) {
               badgeData['imageUrl'] = tierConfig[currentTier].imageURL;
             }
+            //Get config for max tier
+            const maxTier = tierConfig[Object.keys(tierConfig).length];
+            data['maxTier'] = maxTier;
           }
 
           // Construct Badge object from badgeData
@@ -95,13 +71,14 @@ export class Badge {
             id: docSnap.id,
             earnedAt: data['earnedAt'] ? data['earnedAt'].toDate() : new Date(),
             title: badgeData['name'] || '',
-            description: badgeData['description'] || '',
+            text_awarded: badgeData['text_awarded'] || '',
+            text_condition: badgeData['text_condition'] || '',
             imageUrl: badgeData['imageUrl'] || '',
             isCompleted: data['isCompleted'] || true,
             currentProgress: data['currentProgress'] || 0,
             currentTier: data['currentTier'] || 0,
             maxTier: data['maxTier'] || 0,
-            tierRequirements: data['tierRequirements'] || [],
+            tierRequirements: data['tierConfig'] || [],
             lastProgressAt: data['lastProgressAt'] ? data['lastProgressAt'].toDate() : new Date(),
           });
         } else {
@@ -114,13 +91,9 @@ export class Badge {
   }
 
   getComplitionPercentage(): number {
-    if (this.maxTier && this.currentTier !== undefined && this.tierRequirements) {
-      const totalRequirements = this.tierRequirements.reduce((a, b) => a + b, 0);
-      const completedRequirements =
-        this.tierRequirements.slice(0, this.currentTier).reduce((a, b) => a + b, 0) +
-        (this.currentProgress || 0);
-      return (completedRequirements / totalRequirements) * 100;
+    if (this.maxTier && this.currentProgress) {
+      return (this.currentProgress / this.maxTier.amount) * 100;
     }
-    return this.isCompleted ? 100 : 0;
+    return 0;
   }
 }

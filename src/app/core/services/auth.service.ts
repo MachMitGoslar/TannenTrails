@@ -8,6 +8,10 @@ import {
   updateProfile,
   sendPasswordResetEmail,
   onAuthStateChanged,
+  signInWithPopup,
+  OAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
 } from '@angular/fire/auth';
 import { BehaviorSubject, Observable } from 'rxjs';
 
@@ -40,7 +44,7 @@ export class AuthService {
     console.log('AuthService initialized', this.auth);
     // Listen for authentication state changes
     onAuthStateChanged(this.auth, user => {
-      console.log('Auth state changed:', user?.email || 'No user');
+      console.log('Auth state changed:', user?.providerData || 'No user');
       this.userSubject.next(user);
     });
   }
@@ -117,6 +121,50 @@ export class AuthService {
       throw this.handleAuthError(error);
     } finally {
       this.loadingSubject.next(false);
+    }
+  }
+
+  async loginWithOICD() {
+    try {
+      let provider = new OAuthProvider('oidc.goslar_id');
+      provider.setCustomParameters({
+        // 'response_mode': 'query',
+        pkce: 'true',
+        // 'post_logout_redirect_uri': '/'
+      });
+      provider.addScope('offline_access email profile openid');
+      signInWithPopup(this.auth, provider)
+        .then(result => {
+          // This gives you a Nextcloud Access Token. You can use it to access the Nextcloud API.
+          const credential = OAuthProvider.credentialFromResult(result);
+          const token = credential?.accessToken;
+
+          console.log('OICD2 login successful, token:', token);
+          console.log('User info:', result);
+
+          fetch('https://preview.backend.goslar-id.ceconsoft.de/connect/userinfo', {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+            .then(response => response.json())
+            .then(data => {
+              console.log('User info from OICD provider:', data);
+            })
+            .catch(error => {
+              console.error('Error fetching user info from OICD provider:', error);
+            });
+
+          // The signed-in user info.
+          const user = result.user;
+        })
+        .catch(error => {
+          console.error('OICD2 login error:', error);
+        });
+    } catch (error: any) {
+      console.error('OICD login error:', error);
+      throw this.handleAuthError(error);
     }
   }
 

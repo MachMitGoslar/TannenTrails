@@ -64,28 +64,36 @@ export class LocationService {
     return this.permissionGranted$.asObservable();
   }
 
+  private mockIntervalId?: ReturnType<typeof setInterval>;
+
   watchPosition(mock: boolean = false): Observable<Position | null> {
     if (mock) {
-      let GPS_MOCK_DATA = PathData;
+      const data = PathData;
       let index = 0;
 
-      setInterval(() => {
-        let mockPosition: Position = {
+      if (this.mockIntervalId) clearInterval(this.mockIntervalId);
+
+      this.mockIntervalId = setInterval(() => {
+        const cur = data[index];
+        const next = data[(index + 1) % data.length];
+        const heading = this.bearingBetween(cur[0], cur[1], next[0], next[1]);
+
+        this.my_position$.next({
           coords: {
-            latitude: GPS_MOCK_DATA[index][0],
-            longitude: GPS_MOCK_DATA[index][1],
+            latitude: cur[0],
+            longitude: cur[1],
             accuracy: 5,
             altitude: null,
             altitudeAccuracy: null,
-            heading: null,
-            speed: null,
+            heading,
+            speed: 1.4, // ~5 km/h walking speed
           },
           timestamp: Date.now(),
-        };
-        index++;
-        if (index >= GPS_MOCK_DATA.length) index = 0;
-        this.my_position$.next(mockPosition);
-      }, 1000);
+        });
+
+        index = (index + 1) % data.length;
+      }, 800); // slightly faster than real-time for easy testing
+
       return this.my_position$.asObservable();
     }
 
@@ -94,11 +102,21 @@ export class LocationService {
     return this.my_position$.asObservable();
   }
 
+  private bearingBetween(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δλ = ((lng2 - lng1) * Math.PI) / 180;
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+    return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+  }
+
   setupPositionObservable() {
     if (!this.platform.is('hybrid')) {
       // Use browser native geolocation API
       if (!navigator.geolocation) {
-        this.my_position$!.error('Geolocation is not supported by this browser');
+        console.error('Geolocation is not supported by this browser');
+        return;
       }
 
       this.currentWatchId = navigator.geolocation.watchPosition(
@@ -119,8 +137,8 @@ export class LocationService {
           this.my_position$!.next(capacitorPosition);
         },
         error => {
+          // Log but do NOT call .error() — that would permanently terminate the BehaviorSubject
           console.error('Browser geolocation error:', error);
-          this.my_position$!.error('Error watching location: ' + error.message);
         },
         {
           enableHighAccuracy: true,
@@ -145,8 +163,8 @@ export class LocationService {
         },
         (position, err) => {
           if (err) {
+            // Log but do NOT call .error() — that would permanently terminate the BehaviorSubject
             console.error('Capacitor geolocation error:', err);
-            this.my_position$!.error('Error watching location: ' + err);
           } else if (position) {
             this.my_position$!.next(position);
           }

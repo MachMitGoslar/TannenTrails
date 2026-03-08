@@ -55,6 +55,7 @@
               [class.wrong-answer]="
                 isAnswered && selectedAnswer === i && i !== getCorrectOptionIndex()
               "
+              (click)="!isAnswered && (selectedAnswer = i)"
             >
               <ion-radio slot="start" [value]="i" [disabled]="isAnswered"></ion-radio>
               <ion-label>{{ option }}</ion-label>
@@ -78,6 +79,7 @@
             [class.wrong-answer]="
               isAnswered && selectedAnswer === true && getCorrectAnswer() !== true
             "
+            (click)="!isAnswered && (selectedAnswer = true)"
           >
             <ion-radio slot="start" [value]="true"></ion-radio>
             <ion-label>Richtig</ion-label>
@@ -101,6 +103,7 @@
             [class.wrong-answer]="
               isAnswered && selectedAnswer === false && getCorrectAnswer() !== false
             "
+            (click)="!isAnswered && (selectedAnswer = false)"
           >
             <ion-radio slot="start" [value]="false"></ion-radio>
             <ion-label>Falsch</ion-label>

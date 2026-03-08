@@ -180,6 +180,7 @@ export var StationData: Station[] = [
     radius: 25,
     nextStationId: '2',
     imageUrl: 'assets/stations/1.jpg',
+    badgeId: 'dZ436wIPwUW1vjfrxUwO',
   },
   {
     id: '2',
@@ -190,6 +191,7 @@ export var StationData: Station[] = [
     radius: 25,
     nextStationId: '3',
     imageUrl: 'assets/stations/2.jpg',
+    badgeId: 'je69E2V9tABkWEBtqrkl',
   },
   {
     id: '11',
@@ -199,6 +201,7 @@ export var StationData: Station[] = [
     description: 'Schau nach wie ein Fuchs lebt und erkunde seinen Bau',
     radius: 25,
     imageUrl: 'assets/stations/3.jpg',
+    badgeId: 'k1XV29QxVCUkOdMjDgFI',
   },
   {
     id: '3',
@@ -209,6 +212,7 @@ export var StationData: Station[] = [
     radius: 25,
     nextStationId: '4',
     imageUrl: 'assets/stations/4.jpg',
+    badgeId: 'eRRMyQsW9AFfMFnLp7xb',
   },
   {
     id: '4',
@@ -219,6 +223,7 @@ export var StationData: Station[] = [
     radius: 25,
     nextStationId: '5',
     imageUrl: 'assets/stations/5.jpg',
+    badgeId: 'EksiwyEhEPBPopftl77q',
   },
   {
     id: '5',
@@ -229,6 +234,7 @@ export var StationData: Station[] = [
     radius: 25,
     nextStationId: '6',
     imageUrl: 'assets/stations/6.jpg',
+    badgeId: 'bREQqdM1jpXmDQmBOOZQ',
   },
   {
     id: '6',
@@ -239,6 +245,7 @@ export var StationData: Station[] = [
     radius: 25,
     nextStationId: '7',
     imageUrl: 'assets/stations/7.jpg',
+    badgeId: 'GJxg7xRqZfYOFtnhbhEh',
   },
   {
     id: '7',
@@ -249,6 +256,7 @@ export var StationData: Station[] = [
     radius: 25,
     nextStationId: '8',
     imageUrl: 'assets/stations/8.jpg',
+    badgeId: 'GNHqlBnF4D4h74yqV6pd',
   },
   {
     id: '8',
@@ -259,6 +267,7 @@ export var StationData: Station[] = [
     positionLat: 51.896223965437215,
     positionLng: 10.409613068922155,
     imageUrl: 'assets/stations/9.jpg',
+    badgeId: 'HMBjwS9NCyEi0b3LHA4z',
   },
   {
     id: '9',
@@ -269,6 +278,7 @@ export var StationData: Station[] = [
     positionLat: 51.89688434561153,
     positionLng: 10.410368878181568,
     imageUrl: 'assets/stations/10.jpg',
+    badgeId: '6bZHSWP6hOh8VoMCtGBJ',
   },
   {
     id: '10',

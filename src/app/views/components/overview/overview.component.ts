@@ -1,14 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, AfterViewInit, HostListener, inject } from '@angular/core';
-import {
-  IonContent,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonFab,
-  IonFabButton,
-  IonIcon,
-} from '@ionic/angular/standalone';
+import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon } from '@ionic/angular/standalone';
 import {
   PathData,
   Shortcuts,
@@ -21,6 +13,8 @@ import { Station } from 'src/app/core/models/station.model';
 import * as L from 'leaflet';
 import 'leaflet-gpx';
 import 'leaflet-providers';
+import 'leaflet-rotate';
+import { tileLayerOffline, savetiles, TileLayerOffline } from 'leaflet.offline';
 import { Router } from '@angular/router';
 import { LocationService } from 'src/app/core/services/location-service';
 import { NotificationService } from 'src/app/core/services/notification.service';
@@ -30,14 +24,30 @@ import { GameService } from 'src/app/core/services/game-service';
 import { Observable, Subscription } from 'rxjs';
 import { StationBarComponent } from '../station-bar/station-bar.component';
 import { addIcons } from 'ionicons';
-import { trophy } from 'ionicons/icons';
+import {
+  trophy,
+  navigate,
+  navigateOutline,
+  locateOutline,
+  trailSignOutline,
+  bugOutline,
+  layersOutline,
+} from 'ionicons/icons';
 import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-overview',
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
-  imports: [IonContent, IonFab, IonFabButton, IonIcon, CommonModule, StationBarComponent],
+  imports: [
+    IonContent,
+    IonFab,
+    IonFabButton,
+    IonFabList,
+    IonIcon,
+    CommonModule,
+    StationBarComponent,
+  ],
 })
 export class OverviewComponent implements OnInit, AfterViewInit {
   private map!: L.Map;
@@ -48,8 +58,13 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   private userLayer = L.featureGroup();
   private commonLayer = L.featureGroup([this.solvedLayer, this.unsolvedLayer, this.userLayer]);
   private activeStationMarker?: L.Marker;
+  private activeStationRestIcon?: L.Icon;
   public activeStation?: Station;
+  public navigationMode = false;
   private activeStationObserver?: Subscription;
+  private bearingSubscription?: Subscription;
+  private offlineTileLayer?: TileLayerOffline;
+  private smoothedBearing = 0;
 
   public router = inject(Router);
   public locationService = inject(LocationService);
@@ -57,8 +72,18 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   public gameService = inject(GameService);
   public progressModalService = inject(ProgressModalService);
 
+  public isDev = !environment.production;
+
   constructor() {
-    addIcons({ trophy });
+    addIcons({
+      trophy,
+      navigate,
+      navigateOutline,
+      locateOutline,
+      trailSignOutline,
+      bugOutline,
+      layersOutline,
+    });
   }
 
   ngOnInit() {
@@ -66,7 +91,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.map = L.map('map');
+    this.map = L.map('map', { rotate: true, bearing: 0, zoomControl: false });
     this.map.setView([51.9045, 10.4196], 13);
 
     setTimeout(() => {
@@ -77,10 +102,6 @@ export class OverviewComponent implements OnInit, AfterViewInit {
 
     this.map.whenReady(() => {
       console.log('Map loaded');
-
-      //Add layers
-
-      this.setupCenterControl();
 
       //Draw initial path
       this.path = new L.Polyline(
@@ -104,6 +125,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
       this.setupStationObservers();
       this.setupLocation();
       this.map.addLayer(this.commonLayer);
+      this.prefetchTiles();
     });
 
     L.tileLayer
@@ -184,17 +206,23 @@ export class OverviewComponent implements OnInit, AfterViewInit {
         }),
       }).addTo(layer);
       //marker.on('click', (event) => this.router.navigate(['/station', station.id]));
+      const restIcon = L.icon({
+        iconUrl: pinUrl,
+        iconSize,
+        iconAnchor: [11, 40],
+        popupAnchor: [-3, -76],
+      });
       marker.on('click', event => {
         if (this.activeStation) this.activeStation = undefined;
         if (this.activeStationObserver) this.activeStationObserver.unsubscribe();
-        this.activeStationMarker?.setIcon(
-          L.icon({
-            iconUrl: 'assets/map/pin.svg',
-            iconSize: iconSize,
-            iconAnchor: [11, 40],
-            popupAnchor: [-3, -76],
-          })
-        );
+        this.bearingSubscription?.unsubscribe();
+        this.navigationMode = false;
+        this.map.setBearing(0);
+        // Restore the previous active marker to its correct icon (solved or unsolved)
+        if (this.activeStationMarker && this.activeStationRestIcon) {
+          this.activeStationMarker.setIcon(this.activeStationRestIcon);
+        }
+        this.activeStationRestIcon = restIcon;
         this.activeStationMarker = event.target as L.Marker;
         this.setupUserPath(this.userLayer.getBounds().getCenter());
         this.activeStationObserver = this.locationService
@@ -204,6 +232,8 @@ export class OverviewComponent implements OnInit, AfterViewInit {
               console.log('User in radius of station', station.id, ':', inRadius);
               if (inRadius) {
                 this.activeStationObserver?.unsubscribe();
+                this.bearingSubscription?.unsubscribe();
+                this.map.setBearing(0);
                 this.router.navigate(['/station', station.id]);
                 this.notificationService.showSuccess(
                   'Station erreichbar!',
@@ -215,6 +245,26 @@ export class OverviewComponent implements OnInit, AfterViewInit {
               console.error('Error observing distance to station:', error);
             },
           });
+
+        // Navigation view: rotate map to GPS heading and keep user in lower portion
+        this.navigationMode = true;
+        this.bearingSubscription = this.locationService.my_position$.subscribe(position => {
+          if (!position || !this.activeStationMarker || !this.navigationMode) return;
+          const userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+          // Prefer the device's actual travel heading; fall back to bearing-to-station
+          const rawHeading =
+            position.coords.heading ??
+            this.calculateBearing(userLatLng, this.activeStationMarker.getLatLng());
+          // Exponential smoothing — interpolate the shortest arc to avoid wrap-around jumps
+          let diff = rawHeading - this.smoothedBearing;
+          if (diff > 180) diff -= 360;
+          if (diff < -180) diff += 360;
+          this.smoothedBearing = (this.smoothedBearing + diff * 0.25 + 360) % 360;
+          this.map.setBearing(this.smoothedBearing);
+          // Pan to the user's actual position — this makes the fox marker the CSS transform-origin
+          // so rotation pivots around it rather than around a forward-offset center.
+          this.map.panTo(userLatLng, { animate: true, duration: 0.7 });
+        });
 
         this.activeStationMarker.setIcon(
           L.icon({
@@ -240,7 +290,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   setupLocation() {
-    this.locationService.watchPosition().subscribe(
+    this.locationService.watchPosition(environment.mockGps).subscribe(
       position => {
         if (position != null) {
           console.log('Position:', position);
@@ -270,35 +320,16 @@ export class OverviewComponent implements OnInit, AfterViewInit {
     );
   }
 
-  setupCenterControl() {
-    console.log('Setting up center control');
-    let center = new L.Control({
-      position: 'topright',
-    });
-    center.onAdd = (map: L.Map) => {
-      const div = L.DomUtil.create('div', 'leaflet-control-center leaflet-control leaflet-bar');
-      div.innerHTML = '<a title="Zentriere Karte auf Benutzerposition">🦊</a>';
-      div.onclick = () => {
-        this.map.flyToBounds(this.userLayer.getBounds(), { padding: [50, 50] });
-      };
-      return div as HTMLElement;
-    };
-    center.addTo(this.map);
-    (this.map as any)._centerControl = center;
+  centerOnUser(): void {
+    this.map.flyToBounds(this.userLayer.getBounds(), { padding: [50, 50] });
+  }
 
-    let center2 = new L.Control({
-      position: 'topright',
-    });
-    center2.onAdd = (map: L.Map) => {
-      const div = L.DomUtil.create('div', 'leaflet-control-center leaflet-control leaflet-bar');
-      div.innerHTML = '<a title="Zentriere Karte auf Pfad">🌲</a>';
-      div.onclick = () => {
-        this.map.flyToBounds(this.path!.getBounds(), { padding: [50, 50] });
-      };
-      return div as HTMLElement;
-    };
-    center2.addTo(this.map);
-    (this.map as any)._centerControl = center2;
+  centerOnTrail(): void {
+    this.map.flyToBounds(this.path!.getBounds(), { padding: [50, 50] });
+  }
+
+  solveRandomStation(): void {
+    this.gameService.solveRandomStation();
   }
 
   /**
@@ -310,6 +341,74 @@ export class OverviewComponent implements OnInit, AfterViewInit {
     } catch (error) {
       console.error('Error opening progress modal:', error);
     }
+  }
+
+  toggleNavigationMode(): void {
+    this.navigationMode = !this.navigationMode;
+    if (!this.navigationMode) {
+      this.smoothedBearing = 0;
+      this.map.setBearing(0);
+    }
+  }
+
+  private prefetchTiles(): void {
+    if (!this.offlineTileLayer || !this.path) return;
+    const bounds = this.path.getBounds();
+    const control = savetiles(this.offlineTileLayer, {
+      zoomlevels: [13, 14, 15, 16],
+      bounds,
+      maxZoom: 16,
+      alwaysDownload: false,
+      confirm: null,
+      confirmRemoval: null,
+      saveText: '',
+      rmText: '',
+    });
+    control.addTo(this.map);
+    // Hide the save-tiles UI button — we run this silently in the background
+    const el = control.getContainer();
+    if (el) el.style.display = 'none';
+
+    this.offlineTileLayer.on('savestart', () => {
+      this.notificationService.showSuccess(
+        'Karte wird geladen',
+        'Kartenkacheln werden für die Offline-Nutzung gespeichert…'
+      );
+    });
+    this.offlineTileLayer.on('saveend', () => {
+      this.notificationService.showSuccess(
+        'Karte gespeichert',
+        'Die Karte ist jetzt offline verfügbar.'
+      );
+      control.remove();
+    });
+
+    control._saveTiles();
+  }
+
+  private geoOffset(origin: L.LatLng, bearingDeg: number, distanceMeters: number): L.LatLng {
+    const R = 6371000;
+    const δ = distanceMeters / R;
+    const θ = (bearingDeg * Math.PI) / 180;
+    const φ1 = (origin.lat * Math.PI) / 180;
+    const λ1 = (origin.lng * Math.PI) / 180;
+    const φ2 = Math.asin(Math.sin(φ1) * Math.cos(δ) + Math.cos(φ1) * Math.sin(δ) * Math.cos(θ));
+    const λ2 =
+      λ1 +
+      Math.atan2(
+        Math.sin(θ) * Math.sin(δ) * Math.cos(φ1),
+        Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2)
+      );
+    return L.latLng((φ2 * 180) / Math.PI, (λ2 * 180) / Math.PI);
+  }
+
+  private calculateBearing(from: L.LatLng, to: L.LatLng): number {
+    const φ1 = (from.lat * Math.PI) / 180;
+    const φ2 = (to.lat * Math.PI) / 180;
+    const Δλ = ((to.lng - from.lng) * Math.PI) / 180;
+    const y = Math.sin(Δλ) * Math.cos(φ2);
+    const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+    return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
   }
 
   setupUserPath(user_position: L.LatLng) {

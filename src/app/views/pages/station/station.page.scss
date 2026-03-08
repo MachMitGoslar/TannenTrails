@@ -2,22 +2,24 @@
   --padding-start: 0;
   --padding-end: 0;
   --padding-top: 0;
-  --padding-bottom: 20px;
-  padding-bottom: 20px;
-  height: 100vh;
-  //overflow: hidden;
-  background: linear-gradient(black 0%, var(--ion-color-primary) 50%);
-  flex: auto;
-  justify-content: center;
-  padding: 0;
+  --padding-bottom: var(--space-8);
+  --background: var(--ion-color-primary);
 }
 
 // Hero Section
 .hero-section {
   position: relative;
-  //height: 250px;
+  height: 160px;
   overflow: hidden;
   width: 100%;
+
+  @media (min-width: 480px) {
+    height: 200px;
+  }
+
+  @media (min-width: 768px) {
+    height: 280px;
+  }
 
   .station-image {
     width: 100%;
@@ -31,31 +33,25 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 1));
-    padding: 40px 20px 10px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+    padding: var(--space-8) var(--space-4) var(--space-4);
     color: white;
-    width: 100%;
-
-    &.hero-header {
-      width: 100%;
-      margin-bottom: 16px;
-    }
 
     .station-title {
-      font-size: 1.8rem;
+      font-size: var(--font-size-2xl);
       font-weight: bold;
-      margin: 0 0 8px 0;
+      margin: 0 0 var(--space-2) 0;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
       animation: slideUpFadeIn 1s ease-out;
       filter: drop-shadow(2px 2px 2px #333);
     }
 
     .station-number {
-      font-size: 1rem;
+      font-size: var(--font-size-sm);
       opacity: 0.9;
       background: rgba(255, 255, 255, 0.2);
-      padding: 4px 12px;
-      border-radius: 12px;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-md);
       display: inline-block;
       backdrop-filter: blur(10px);
       animation: slideUpFadeIn 1s ease-out 0.2s both;
@@ -66,18 +62,19 @@
 // Content Section
 .content-section {
   background: linear-gradient(black 0%, var(--ion-color-primary) 50%);
-  height: 100%;
-  overflow: hidden;
-  align-content: space-between;
   display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
   width: 100%;
+  min-height: calc(100% - 160px);
 }
 
 // Card Styles
 ion-card {
-  margin: 16px 0;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
   animation: fadeInUp 0.6s ease-out;
 
@@ -166,18 +163,18 @@ ion-card {
   }
 
   &.distance-card {
-    width: 100%;
     background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
     color: #333;
-    margin: 2px 8px;
+
     ion-card-title {
       color: #333;
     }
 
     ion-card-content {
       text-align: center;
+
       .distance-text {
-        font-size: 2rem;
+        font-size: var(--font-size-3xl);
         font-weight: bold;
         margin: 0;
       }
@@ -188,8 +185,6 @@ ion-card {
     background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
     color: #333;
     text-align: center;
-    width: 100%;
-    margin: 2px;
 
     ion-card-title {
       color: #333;
@@ -198,27 +193,31 @@ ion-card {
 }
 
 ion-card-header {
-  padding-bottom: 8px;
+  padding-bottom: 4px;
 
   ion-card-title {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 1.3rem;
+    gap: 6px;
+    font-size: 1.1rem;
     font-weight: 600;
 
     ion-icon {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
     }
   }
 }
 
 ion-card-content {
-  padding-top: 8px;
+  padding-top: 4px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 6px;
+  --padding-bottom: 10px;
 
   .description-text {
-    font-size: 1.1rem;
-    line-height: 1.6;
+    font-size: 1rem;
+    line-height: 1.55;
     margin: 0;
   }
 
@@ -346,31 +345,9 @@ ion-card:nth-child(5) {
 // Responsive Design
 @media (min-width: 768px) {
   .content-section {
+    max-width: 680px;
     margin: 0 auto;
-    padding: 0 20px;
-    align-content: space-between;
-    justify-content: center;
-    display: flex;
-  }
-  .question-container,
-  .distance-card,
-  .description-card,
-  .completion-card {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  .hero-section {
-    height: 300px;
-
-    .hero-header {
-      width: 600px;
-      margin: 16px auto;
-    }
-  }
-
-  ion-card {
-    margin: 20px 0;
+    padding: var(--space-6) var(--space-5);
   }
 }
 
@@ -428,5 +405,5 @@ ion-card:nth-child(5) {
 // Question Container
 .question-container {
   position: relative;
-  margin: 16px 0;
+  margin: 0;
 }

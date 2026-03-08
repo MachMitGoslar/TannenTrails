@@ -13,6 +13,7 @@ export class Station {
 
   question?: Question = new MultipleChoiceQuestion('test');
   nextStationId?: string = '';
+  badgeId?: string = undefined;
 
   constructor(id: string, init?: Partial<Station>) {
     this.id = id;

@@ -6,7 +6,7 @@ import { RouterLinkActive, RouterLink, Router } from '@angular/router';
   selector: 'app-station-bar',
   templateUrl: './station-bar.component.html',
   styleUrls: ['./station-bar.component.scss'],
-  imports: [RouterLinkActive, RouterLink],
+  imports: [],
 })
 export class StationBarComponent implements OnInit {
   @Input() station?: Station;
