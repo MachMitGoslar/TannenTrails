@@ -1,0 +1,328 @@
+// Progress Modal Styles
+.progress-card {
+  margin-bottom: 16px;
+}
+
+.progress-gauge {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.gauge-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.gauge-circle {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--ion-color-primary) 0% var(--progress, 0%),
+    var(--ion-color-light) var(--progress, 0%) 100%
+  );
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-fill {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--ion-background-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-content {
+  position: absolute;
+  text-align: center;
+}
+
+.progress-text {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--ion-color-primary);
+  line-height: 1;
+}
+
+.completed {
+  color: var(--ion-color-success);
+}
+
+.divider {
+  color: var(--ion-color-medium);
+  margin: 0 4px;
+}
+
+.total {
+  color: var(--ion-color-medium);
+}
+
+.stations-label {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.progress-percentage {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+// Stats Card Styles
+.stats-card {
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.stat-item ion-icon {
+  font-size: 1.8rem;
+  margin-right: 12px;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--ion-color-primary);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.level-progress {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+}
+
+.level-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+ion-progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+// Badges Card Styles
+.badges-card {
+  margin-bottom: 16px;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.badge-item {
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--ion-color-light);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.badge-image {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ion-background-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+ion-chip {
+  margin: 8px 0 4px 0;
+  font-weight: 600;
+}
+
+.badge-item ion-text {
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+// No badges card
+.no-badges-card {
+  margin-bottom: 16px;
+
+  ion-card-content {
+    padding: 40px 20px;
+
+    ion-icon {
+      margin-bottom: 16px;
+    }
+
+    h3 {
+      margin: 0 0 8px 0;
+      color: var(--ion-color-medium);
+    }
+
+    p {
+      margin: 0;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+// Login Card Styles
+.login-card {
+  margin-bottom: 16px;
+}
+
+.login-prompt {
+  text-align: center;
+  padding: 20px 0;
+
+  p {
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+}
+
+ion-item {
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.error-message {
+  text-align: center;
+  margin: 16px 0;
+  padding: 12px;
+  background: rgba(var(--ion-color-danger-rgb), 0.1);
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-danger);
+}
+
+.login-actions {
+  margin-top: 24px;
+
+  ion-button {
+    margin-bottom: 8px;
+  }
+}
+
+// General Modal Styles
+ion-header {
+  ion-toolbar {
+    --background: var(--ion-color-primary);
+    --color: var(--ion-color-primary-contrast);
+
+    ion-title {
+      font-weight: bold;
+    }
+
+    ion-button {
+      --color: var(--ion-color-primary-contrast);
+    }
+  }
+}
+
+ion-content {
+  --background: var(--ion-background-color);
+}
+
+ion-card {
+  margin: 0 0 16px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+ion-card-title {
+  color: var(--ion-color-primary);
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .gauge-circle {
+    width: 140px;
+    height: 140px;
+  }
+
+  .progress-text {
+    font-size: 2rem;
+  }
+
+  .badges-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 12px;
+  }
+
+  .badge-image {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  .gauge-circle {
+    background: conic-gradient(
+      var(--ion-color-primary) 0% var(--progress, 0%),
+      var(--ion-color-step-50) var(--progress, 0%) 100%
+    );
+  }
+
+  .level-progress {
+    background: var(--ion-color-step-50);
+  }
+
+  .badge-item {
+    background: var(--ion-color-step-50);
+  }
+
+  .badge-image {
+    background: var(--ion-color-step-100);
+  }
+}
+
+.goslar-id-button button {
+  background-color: hsl(240 3.7% 15.88%);
+}

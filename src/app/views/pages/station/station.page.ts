@@ -24,7 +24,7 @@ import { ActivatedRoute } from '@angular/router';
 import { MultipleChoiceQuestion } from 'src/app/core/models/questions.model';
 import { map, Observable } from 'rxjs';
 import { LocationService } from 'src/app/core/services/location-service';
-import { insideCircle } from 'geolocation-utils';
+import { headingTo, insideCircle } from 'geolocation-utils';
 import { QuestionCardComponent } from '../../components/question-card/question-card.component';
 import { GameService } from 'src/app/core/services/game-service';
 import { StarsAnimationComponent } from '../../components/animations/stars/stars-animation.component';
@@ -57,7 +57,8 @@ import { StarsAnimationComponent } from '../../components/animations/stars/stars
 })
 export class StationPage implements OnInit {
   station!: Station;
-  heading: Observable<number> = new Observable<number>();
+  heading: Observable<string> = new Observable<string>();
+  headingToStation: string = '';
   distanceToStation: Observable<number> = new Observable<number>();
   inRadius: boolean = false;
   showQuestionCard: boolean = true;
@@ -71,8 +72,11 @@ export class StationPage implements OnInit {
 
   constructor() {
     const stationId = this.route.snapshot.paramMap.get('id');
-    this.station = StationData.find(s => s.id === Number(stationId))!;
-    this.station.question = QuestionData[Number(stationId)];
+    if (stationId === null) {
+      throw new Error('Station ID is null');
+    }
+    this.station = StationData.find(s => s.id === stationId)!;
+    this.station.question = QuestionData[stationId];
     if (this.gameService.isStationSolved(this.station)) {
       this.questionAnsweredSuccessfully = true;
       this.successAnimationDone = true;
@@ -110,7 +114,7 @@ export class StationPage implements OnInit {
             { lat: this.station.positionLat, lon: this.station.positionLng },
             this.station.radius
           );
-          console.log('Distance to station:', distance);
+
           return distance;
         } else {
           return Infinity;
@@ -121,12 +125,18 @@ export class StationPage implements OnInit {
       map(
         position => {
           if (position) {
-            return position.coords.heading ?? 200;
+            this.headingToStation = this.locationService.degreesToCompass(
+              headingTo(
+                { lat: position.coords.latitude, lon: position.coords.longitude },
+                { lat: this.station.positionLat, lon: this.station.positionLng }
+              )
+            );
+            return this.locationService.degreesToCompass(position.coords.heading);
           } else {
-            return 0;
+            return 'unklar';
           }
         },
-        { defaultValue: 0 }
+        { defaultValue: 'unklar' }
       )
     );
   }

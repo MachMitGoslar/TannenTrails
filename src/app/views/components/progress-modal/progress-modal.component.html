@@ -1,0 +1,178 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Mein Fortschritt</ion-title>
+    <ion-button slot="end" fill="clear" (click)="closeModal()">
+      <ion-icon name="close"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Station Progress Section -->
+  <ion-card class="progress-card">
+    <ion-card-header>
+      <ion-card-title>Stationsfortschritt</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="progress-gauge">
+        <div class="gauge-container">
+          <div class="gauge-circle">
+            <div class="gauge-fill" [style.--progress]="progressPercentage + '%'"></div>
+            <div class="gauge-content">
+              <div class="progress-text">
+                <span class="completed">{{ completedStations | async }}</span>
+                <span class="divider">/</span>
+                <span class="total">{{ totalStations }}</span>
+              </div>
+              <div class="stations-label">Stationen</div>
+            </div>
+          </div>
+        </div>
+        <ion-text [color]="getProgressColor(progressPercentage | async)">
+          <p class="progress-percentage">{{ progressPercentage | async }}% erledigt</p>
+        </ion-text>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- User is authenticated - Show badges and stats -->
+  <div *ngIf="isAuthenticated; else loginSection">
+    <!-- User Stats Card -->
+    <ion-card class="stats-card" *ngIf="userStats">
+      <ion-card-header>
+        <ion-card-title>Deine Erfolge</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <div class="stat-item">
+                <ion-icon name="trophy" color="warning"></ion-icon>
+                <div class="stat-content">
+                  <div class="stat-value">{{ userStats.totalPoints || 0 }}</div>
+                  <div class="stat-label">Punkte</div>
+                </div>
+              </div>
+            </ion-col>
+            <ion-col size="6">
+              <div class="stat-item">
+                <ion-icon name="star" color="primary"></ion-icon>
+                <div class="stat-content">
+                  <div class="stat-value">{{ getLevelProgress().current }}</div>
+                  <div class="stat-label">Level</div>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6">
+              <div class="stat-item">
+                <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                <div class="stat-content">
+                  <div class="stat-value">{{ (completedStations | async) || 0 }}</div>
+                  <div class="stat-label">Aufgaben</div>
+                </div>
+              </div>
+            </ion-col>
+            <ion-col size="6">
+              <div class="stat-item">
+                <ion-icon name="person" color="secondary"></ion-icon>
+                <div class="stat-content">
+                  <div class="stat-value">{{ badges.length }}</div>
+                  <div class="stat-label">Abzeichen</div>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <!-- Level Progress Bar -->
+        <div class="level-progress" *ngIf="userStats">
+          <div class="level-info">
+            <span>Level {{ getLevelProgress().current }}</span>
+            <span>{{ getLevelProgress().percentage }}%</span>
+          </div>
+          <ion-progress-bar [value]="getLevelProgress().percentage / 100" color="primary">
+          </ion-progress-bar>
+          <ion-text color="medium">
+            <small>Nächstes Level in {{ 100 - getLevelProgress().percentage }}%</small>
+          </ion-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Badges Section -->
+    <ion-card class="badges-card" *ngIf="badges.length > 0">
+      <ion-card-header>
+        <ion-card-title>Verdiente Abzeichen</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="badges-grid">
+          <div class="badge-item" *ngFor="let badge of badges">
+            <div class="badge-image">
+              <img
+                [src]="badge.imageUrl"
+                [alt]="badge.name"
+                onerror="this.src='assets/icon/default-badge.svg'"
+              />
+            </div>
+            <ion-chip [color]="getBadgeColor(badge)">
+              <ion-label>{{ badge.name }}</ion-label>
+            </ion-chip>
+            <ion-text color="medium">
+              <small>{{ badge.description }}</small>
+            </ion-text>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- No badges message -->
+    <ion-card class="no-badges-card" *ngIf="badges.length === 0">
+      <ion-card-content class="ion-text-center">
+        <ion-icon name="trophy" color="medium" size="large"></ion-icon>
+        <h3>Noch keine Abzeichen</h3>
+        <p>Löse Aufgaben und erkunde Stationen, um deine ersten Abzeichen zu verdienen!</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="logout-section" *ngIf="isAuthenticated && !isProduction">
+    <ion-button expand="block" color="danger" (click)="logout()">
+      <ion-icon name="log-out" slot="start"></ion-icon>
+      Abmelden
+    </ion-button>
+  </div>
+
+  <!-- Login section — hidden in production -->
+  <ng-template #loginSection>
+    <div *ngIf="!isProduction">
+      <ion-card class="login-card">
+        <ion-card-header>
+          <ion-card-title>Anmelden für Abzeichen</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          @if (!showLoginForm) {
+            <div *ngIf="!showLoginForm" class="login-prompt">
+              <ion-text color="medium">
+                <p>Melde dich an, um deinen Fortschritt zu speichern und Abzeichen zu sammeln!</p>
+              </ion-text>
+              <ion-button expand="block" class="goslar-id-button" (click)="loginWithOICD()">
+                <ion-icon name="cloud-outline" slot="start"></ion-icon>
+                Mit GoslarID anmelden
+              </ion-button>
+              <ion-text color="medium">
+                <p>
+                  Mehr Informationen zur GoslarID gibt es
+                  <a href="https://hsp.goslar.de/" target="_blank">hier</a>
+                </p>
+              </ion-text>
+            </div>
+          } @else {
+            <!-- Show Badges Showcase-->
+          }
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </ng-template>
+</ion-content>

@@ -1,13 +1,55 @@
-<ion-content [fullscreen]="true" color="primary">
-  <div id="hero-container">
-    <img
-      src="assets/logos/Stadtforst Goslar_Logo_Aller_Slogan_Negativ_ohne Subline.png"
-      alt="TannenTrails Logo"
-    />
-    <h2>Walderlebnispfad Goslar</h2>
-  </div>
-  <div class="map-container">
-    <div id="map" style="height: 500px; width: 100%"></div>
-    <app-station-bar [station]="activeStation"></app-station-bar>
+<!-- Progress Modal — top right, always visible -->
+<ion-fab vertical="top" horizontal="end" slot="fixed" class="trophy-fab">
+  <ion-fab-button (click)="openProgressModal()" color="secondary" class="progress-fab">
+    <ion-icon name="trophy"></ion-icon>
+  </ion-fab-button>
+</ion-fab>
+
+<!-- Map controls speed dial — bottom right -->
+<ion-fab vertical="bottom" horizontal="end" slot="fixed" class="map-controls-fab">
+  <ion-fab-button color="primary">
+    <ion-icon name="layers-outline"></ion-icon>
+  </ion-fab-button>
+  <ion-fab-list side="top">
+    <ion-fab-button (click)="centerOnUser()" color="light" title="Meine Position">
+      <ion-icon name="locate-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button (click)="centerOnTrail()" color="light" title="Gesamter Pfad">
+      <ion-icon name="trail-sign-outline"></ion-icon>
+    </ion-fab-button>
+    @if (activeStation) {
+      <ion-fab-button
+        (click)="toggleNavigationMode()"
+        [color]="navigationMode ? 'secondary' : 'light'"
+        title="Navigations-Modus"
+      >
+        <ion-icon [name]="navigationMode ? 'navigate' : 'navigate-outline'"></ion-icon>
+      </ion-fab-button>
+    }
+    @if (isDev) {
+      <ion-fab-button
+        (click)="solveRandomStation()"
+        color="warning"
+        title="Zufällige Station lösen (Dev)"
+      >
+        <ion-icon name="bug-outline"></ion-icon>
+      </ion-fab-button>
+    }
+  </ion-fab-list>
+</ion-fab>
+
+<ion-content [fullscreen]="true" [scrollY]="false" color="primary">
+  <div class="map-layout">
+    <div id="hero-container">
+      <img
+        src="assets/logos/Stadtforst Goslar_Logo_Aller_Slogan_Negativ_ohne Subline.png"
+        alt="TannenTails Logo"
+      />
+      <h2>Walderlebnispfad Goslar</h2>
+    </div>
+    <div class="map-container">
+      <div id="map"></div>
+      <app-station-bar [station]="activeStation"></app-station-bar>
+    </div>
   </div>
 </ion-content>

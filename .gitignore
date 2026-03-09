@@ -69,4 +69,12 @@ testem.log
 .DS_Store
 Thumbs.db
 
+# Environment files — contain API keys and secrets; never commit these.
+# Copy environment.example.ts to environment.ts / environment.prod.ts and fill in real values.
+/src/environments/environment.ts
+/src/environments/environment.prod.ts
+
 www.zip
+CLAUDE.md
+matters.txt
+memory/

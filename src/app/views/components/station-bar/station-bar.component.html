@@ -1,6 +1,6 @@
 <div id="station-bar">
   @if (station) {
-    <div class="station-info">
+    <div class="station-info" (click)="navigateToStation(station.id)">
       <div class="station-number">Station {{ station.id }}</div>
       <div class="station-title">{{ station.title }}</div>
     </div>

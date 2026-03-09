@@ -24,26 +24,24 @@
         <h1 class="station-title">{{ station.title }}</h1>
         <div class="station-number">Station {{ station.id }}</div>
       </div>
-
-      <ion-card class="description-card">
-        <ion-card-header>
-          <ion-card-title>
-            <ion-icon name="information-circle-outline"></ion-icon>
-            Beschreibung
-          </ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p class="description-text">{{ station.description }}</p>
-        </ion-card-content>
-      </ion-card>
     </div>
   </div>
 
   <!-- Content Section -->
   <div class="content-section">
-    <!-- Description Card -->
+    <ion-card class="description-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Beschreibung
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="description-text">{{ station.description }}</p>
+      </ion-card-content>
+    </ion-card>
 
-    @if (station.question && !inRadius && !successAnimationDone) {
+    @if (station.question && inRadius && !successAnimationDone) {
       <div class="question-container" style="position: relative">
         <app-question-card
           [question]="station.question"
@@ -59,10 +57,8 @@
       </div>
     }
 
-    <div class="spacer"></div>
-
     <!-- DistanceCard -->
-    <ion-card class="distance-card" *ngIf="inRadius && !successAnimationDone">
+    <ion-card class="distance-card" *ngIf="!inRadius && !successAnimationDone">
       <ion-card-header>
         <ion-card-title>
           <ion-icon name="compass-outline"></ion-icon>
@@ -71,8 +67,11 @@
       </ion-card-header>
       <ion-card-content>
         <ion-icon name="navigate" [style]="{ 'font-size': '4rem', rotate: '-45deg' }"></ion-icon>
-        <p>Du läufst in folgende Richtung: {{ heading | async }}°</p>
-        <p>Entfernung zur nächsten Station: {{ distanceToStation | async | number: '1.0-0' }} m</p>
+        @if ((heading | async) !== 'Unknown') {
+          <p>Du läufst in folgende Richtung: {{ heading | async }}°</p>
+        }
+        <p>Die Station befindet sich in Richtung: {{ headingToStation }}</p>
+        <p>Die Entfernung beträgt {{ distanceToStation | async | number: '1.0-0' }} m</p>
       </ion-card-content>
     </ion-card>
 

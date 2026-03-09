@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
+import { provideRouter } from '@angular/router';
 
 import { StationBarComponent } from './station-bar.component';
 
@@ -9,8 +9,8 @@ describe('StationBarComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [StationBarComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [StationBarComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(StationBarComponent);

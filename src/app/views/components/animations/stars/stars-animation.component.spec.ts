@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { StarsAnimationComponent } from './stars-animation.component';
 
@@ -9,8 +8,7 @@ describe('StarsAnimationComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [StarsAnimationComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [StarsAnimationComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(StarsAnimationComponent);

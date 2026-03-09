@@ -6,14 +6,24 @@ import {
   PreloadAllModules,
 } from '@angular/router';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
+import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { getAuth, provideAuth } from '@angular/fire/auth';
+import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
+import { environment } from './environments/environment';
+import { EnvironmentProviders } from '@angular/core';
+
+const firebaseApp = initializeApp(environment.firebaseConfig);
 
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
+    provideFirebaseApp(() => firebaseApp),
+    provideAuth(() => getAuth()),
+    provideFirestore(() => getFirestore(firebaseApp)),
   ],
 });

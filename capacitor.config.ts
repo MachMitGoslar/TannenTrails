@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
+  appId: 'app.goslar.wald',
   appName: 'TannenTails',
   webDir: 'www'
 };
