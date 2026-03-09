@@ -72,7 +72,7 @@ jobs:
         run: |
           if [ -f src/environments/environment.example.ts ]; then
             cp src/environments/environment.example.ts src/environments/environment.ts
-            cp src/environments/environment.prod.example.ts src/environments/environment.prod.ts
+            cp src/environments/environment.example.ts src/environments/environment.prod.ts
           fi
 
       - name: 'Unit Tests ausführen'
@@ -109,7 +109,7 @@ jobs:
         run: |
           if [ -f src/environments/environment.example.ts ]; then
             cp src/environments/environment.example.ts src/environments/environment.ts
-            cp src/environments/environment.prod.example.ts src/environments/environment.prod.ts
+            cp src/environments/environment.example.ts src/environments/environment.prod.ts
           fi
 
       - name: 'Ionic CLI installieren'
@@ -185,7 +185,7 @@ jobs:
         run: |
           if [ -f src/environments/environment.example.ts ]; then
             cp src/environments/environment.example.ts src/environments/environment.ts
-            cp src/environments/environment.prod.example.ts src/environments/environment.prod.ts
+            cp src/environments/environment.example.ts src/environments/environment.prod.ts
           fi
 
       - name: 'Production Build für Analyse'
