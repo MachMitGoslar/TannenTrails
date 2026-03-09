@@ -30,6 +30,13 @@ jobs:
 
       - name: 'Dependencies installieren'
         run: npm ci
+      
+      - name: 'Mockup Environment Datein einspielen'
+        run: |
+          if [ -f src/environments/environment.example.ts ]; then
+            cp src/environments/environment.example.ts src/environments/environment.ts
+            cp src/environments/environment.example.ts src/environments/environment.prod.ts
+          fi
 
       - name: 'ESLint Prüfung'
         run: npm run lint
@@ -354,7 +361,7 @@ jobs:
               await github.rest.pulls.requestReviewers({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                pull_request_number: context.issue.number,
+                pull_number: context.issue.number,
                 reviewers: reviewers
               });
             }
@@ -381,7 +388,7 @@ jobs:
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_request_number: context.issue.number,
+              pull_number: context.issue.number,
             });
 
             const labels = [];

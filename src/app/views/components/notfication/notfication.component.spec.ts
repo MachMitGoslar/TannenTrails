@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { NotificationComponent } from './notfication.component';
 
@@ -9,8 +8,7 @@ describe('NotificationComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [NotificationComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [NotificationComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NotificationComponent);
