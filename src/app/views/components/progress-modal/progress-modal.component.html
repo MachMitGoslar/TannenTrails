@@ -152,70 +152,25 @@
           <ion-card-title>Anmelden für Abzeichen</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <div *ngIf="!showLoginForm; else loginForm" class="login-prompt">
-            <ion-text color="medium">
-              <p>Melde dich an, um deinen Fortschritt zu speichern und Abzeichen zu sammeln!</p>
-            </ion-text>
-            <ion-button expand="block" (click)="showLogin()">
-              <ion-icon name="log-in" slot="start"></ion-icon>
-              Anmelden
-            </ion-button>
-            <ion-text> ODER </ion-text>
-            <ion-button expand="block" (click)="loginWithOICD()">
-              <ion-icon name="cloud-outline" slot="start"></ion-icon>
-              Mit Nextcloud anmelden
-            </ion-button>
-          </div>
-
-          <ng-template #loginForm>
-            <form (ngSubmit)="onLogin()">
-              <ion-item>
-                <ion-icon name="mail" slot="start"></ion-icon>
-                <ion-input
-                  [(ngModel)]="email"
-                  name="email"
-                  type="email"
-                  placeholder="E-Mail"
-                  required
-                >
-                </ion-input>
-              </ion-item>
-
-              <ion-item>
-                <ion-icon name="lock-closed" slot="start"></ion-icon>
-                <ion-input
-                  [(ngModel)]="password"
-                  name="password"
-                  type="password"
-                  placeholder="Passwort"
-                  required
-                >
-                </ion-input>
-              </ion-item>
-
-              <!-- Error Message -->
-              <ion-text color="danger" *ngIf="errorMessage">
-                <p class="error-message">{{ errorMessage }}</p>
+          @if (!showLoginForm) {
+            <div *ngIf="!showLoginForm" class="login-prompt">
+              <ion-text color="medium">
+                <p>Melde dich an, um deinen Fortschritt zu speichern und Abzeichen zu sammeln!</p>
               </ion-text>
-
-              <!-- Action Buttons -->
-              <div class="login-actions">
-                <ion-button expand="block" type="submit" [disabled]="isLoading">
-                  <ion-spinner *ngIf="isLoading" slot="start"></ion-spinner>
-                  Anmelden
-                </ion-button>
-
-                <ion-button
-                  expand="block"
-                  fill="clear"
-                  (click)="hideLogin()"
-                  [disabled]="isLoading"
-                >
-                  Abbrechen
-                </ion-button>
-              </div>
-            </form>
-          </ng-template>
+              <ion-button expand="block" class="goslar-id-button" (click)="loginWithOICD()">
+                <ion-icon name="cloud-outline" slot="start"></ion-icon>
+                Mit GoslarID anmelden
+              </ion-button>
+              <ion-text color="medium">
+                <p>
+                  Mehr Informationen zur GoslarID gibt es
+                  <a href="https://hsp.goslar.de/" target="_blank">hier</a>
+                </p>
+              </ion-text>
+            </div>
+          } @else {
+            <!-- Show Badges Showcase-->
+          }
         </ion-card-content>
       </ion-card>
     </div>
