@@ -1,4 +1,3 @@
-import { image } from 'ionicons/icons';
 import { ExternalQuestion, MultipleChoiceQuestion } from './questions.model';
 import { Station } from './station.model';
 
@@ -290,6 +289,7 @@ export var StationData: Station[] = [
     positionLng: 10.411594207987454,
     imageUrl: 'assets/stations/11.jpg',
     nextStationId: '11',
+    badgeId: 'PLACEHOLDER_STATION_10_BADGE',
   },
 ];
 

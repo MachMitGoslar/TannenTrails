@@ -313,7 +313,7 @@ export class ProgressModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  loginWithOICD() {
-    this.authService.loginWithOICD();
+  loginWithOIDC() {
+    this.authService.loginWithOIDC();
   }
 }

@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Station } from '../models/station.model';
 import { StationData } from '../models/dataset';
 import { ReplaySubject } from 'rxjs';
-import { collection, Firestore, getDocs, query, where } from '@angular/fire/firestore';
+import { Firestore } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -61,12 +61,9 @@ export class GameService {
     if (this.unsolvedStations.size === 0) {
       return;
     }
-    const randomIndex = Math.floor(Math.random() * this.unsolvedStations.size);
-    const stationToSolve = this.unsolvedStations.get(String(randomIndex));
-    if (!stationToSolve) {
-      console.log('No station found to solve at index:', randomIndex);
-      return;
-    }
+    const stationsArray = [...this.unsolvedStations.values()];
+    const randomIndex = Math.floor(Math.random() * stationsArray.length);
+    const stationToSolve = stationsArray[randomIndex];
     this.solveStation(stationToSolve);
   }
 
@@ -79,19 +76,5 @@ export class GameService {
 
   isStationSolved(station: Station): boolean {
     return this.solvedStations.has(station.id);
-  }
-
-  private writeStateToFirestore(userId: string) {
-    let user_badge_ref = collection(this.db, `users/${userId}/badges`);
-
-    let badge_query = query(user_badge_ref, where('organisationId', '==', 'stadtforst'));
-    getDocs(badge_query).then(querySnapshot => {
-      querySnapshot.forEach(doc => {
-        console.log('User has badge:', doc.id, 'Data:', doc.data());
-        if (doc.exists() && this.solvedStations.get(doc.id)) {
-          //Badge
-        }
-      });
-    });
   }
 }

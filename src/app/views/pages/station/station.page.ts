@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -22,7 +22,8 @@ import { Station } from 'src/app/core/models/station.model';
 import { StationData, QuestionData } from 'src/app/core/models/dataset';
 import { ActivatedRoute } from '@angular/router';
 import { MultipleChoiceQuestion } from 'src/app/core/models/questions.model';
-import { map, Observable } from 'rxjs';
+import { map, Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { LocationService } from 'src/app/core/services/location-service';
 import { headingTo, insideCircle } from 'geolocation-utils';
 import { QuestionCardComponent } from '../../components/question-card/question-card.component';
@@ -55,7 +56,7 @@ import { StarsAnimationComponent } from '../../components/animations/stars/stars
     StarsAnimationComponent,
   ],
 })
-export class StationPage implements OnInit {
+export class StationPage implements OnInit, OnDestroy {
   station!: Station;
   heading: Observable<string> = new Observable<string>();
   headingToStation: string = '';
@@ -64,6 +65,8 @@ export class StationPage implements OnInit {
   showQuestionCard: boolean = true;
   successAnimationDone: boolean = false;
   questionAnsweredSuccessfully: boolean = false;
+
+  private destroy$ = new Subject<void>();
 
   // Dependency injections
   private route = inject(ActivatedRoute);
@@ -104,6 +107,7 @@ export class StationPage implements OnInit {
     let station_pos = L.latLng(this.station.positionLat, this.station.positionLng);
 
     this.distanceToStation = this.locationService.watchPosition().pipe(
+      takeUntil(this.destroy$),
       map(position => {
         if (position) {
           let distance = station_pos.distanceTo(
@@ -122,6 +126,7 @@ export class StationPage implements OnInit {
       })
     );
     this.heading = this.locationService.watchPosition().pipe(
+      takeUntil(this.destroy$),
       map(
         position => {
           if (position) {
@@ -140,6 +145,11 @@ export class StationPage implements OnInit {
       )
     );
   }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   handleAnswerSubmission(event: any) {
     console.log('Answer submitted for station', this.station.id, ':', event);
     if (event.isCorrect) {

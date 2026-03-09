@@ -2,18 +2,17 @@ import { Injectable, inject } from '@angular/core';
 import {
   Auth,
   User,
+  OAuthProvider,
+  UserCredential,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
   updateProfile,
   sendPasswordResetEmail,
   onAuthStateChanged,
-  signInWithPopup,
-  OAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
 } from '@angular/fire/auth';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 export interface UserProfile {
   uid: string;
@@ -21,6 +20,8 @@ export interface UserProfile {
   displayName: string | null;
   photoURL: string | null;
   emailVerified: boolean;
+  /** Provider used to sign in (e.g. 'password', 'oidc.goslar_id') */
+  providerId: string | null;
 }
 
 export interface AuthError {
@@ -37,35 +38,36 @@ export class AuthService {
   private userSubject = new BehaviorSubject<User | null>(null);
   private loadingSubject = new BehaviorSubject<boolean>(false);
 
+  /**
+   * OIDC access token from the Goslar-ID provider, stored after a successful
+   * OIDC login. Consumers (e.g. a future external API service) can read this
+   * token directly. Cleared on sign-out.
+   */
+  private oidcAccessTokenSubject = new BehaviorSubject<string | null>(null);
+
   public user$ = this.userSubject.asObservable();
   public loading$ = this.loadingSubject.asObservable();
+  /** Emits the raw Goslar-ID OIDC access token whenever it changes. */
+  public oidcAccessToken$ = this.oidcAccessTokenSubject.asObservable();
 
   constructor() {
-    console.log('AuthService initialized', this.auth);
-    // Listen for authentication state changes
     onAuthStateChanged(this.auth, user => {
-      console.log('Auth state changed:', user?.providerData || 'No user');
       this.userSubject.next(user);
+      // Clear the OIDC token whenever the session ends
+      if (!user) {
+        this.oidcAccessTokenSubject.next(null);
+      }
     });
   }
 
-  /**
-   * Get the current user
-   */
   get currentUser(): User | null {
     return this.auth.currentUser;
   }
 
-  /**
-   * Check if user is authenticated
-   */
   get isAuthenticated(): boolean {
     return !!this.currentUser;
   }
 
-  /**
-   * Get current user profile information
-   */
   get userProfile(): UserProfile | null {
     const user = this.currentUser;
     if (!user) return null;
@@ -76,184 +78,151 @@ export class AuthService {
       displayName: user.displayName,
       photoURL: user.photoURL,
       emailVerified: user.emailVerified,
+      providerId: user.providerData[0]?.providerId ?? null,
     };
   }
 
   /**
-   * Register a new user with email and password
+   * Returns a short-lived Firebase ID token (JWT) for the current user.
+   * This token can be sent as a Bearer token to any custom backend that
+   * validates it against the Firebase project. Refreshed automatically.
+   * Returns null when no user is signed in.
    */
+  async getFirebaseIdToken(): Promise<string | null> {
+    const user = this.currentUser;
+    if (!user) return null;
+    return user.getIdToken();
+  }
+
+  /**
+   * Returns the current Goslar-ID OIDC access token synchronously.
+   * Only populated after a successful `loginWithOIDC()` call.
+   * Use `oidcAccessToken$` to react to changes over time.
+   */
+  get oidcAccessToken(): string | null {
+    return this.oidcAccessTokenSubject.value;
+  }
+
   async register(email: string, password: string, displayName?: string): Promise<User> {
     try {
       this.loadingSubject.next(true);
-
-      const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-      const user = userCredential.user;
-
-      // Update display name if provided
+      const { user } = await createUserWithEmailAndPassword(this.auth, email, password);
       if (displayName) {
         await updateProfile(user, { displayName });
       }
-
-      console.log('User registered successfully:', user.email);
       return user;
     } catch (error: any) {
-      console.error('Registration error:', error);
       throw this.handleAuthError(error);
     } finally {
       this.loadingSubject.next(false);
     }
   }
 
-  /**
-   * Sign in with email and password
-   */
   async signIn(email: string, password: string): Promise<User> {
     try {
       this.loadingSubject.next(true);
-
-      const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
-      const user = userCredential.user;
-
-      console.log('User signed in successfully:', user.email);
+      const { user } = await signInWithEmailAndPassword(this.auth, email, password);
       return user;
     } catch (error: any) {
-      console.error('Sign in error:', error);
       throw this.handleAuthError(error);
     } finally {
       this.loadingSubject.next(false);
     }
   }
 
-  async loginWithOICD() {
-    try {
-      let provider = new OAuthProvider('oidc.goslar_id');
-      provider.setCustomParameters({
-        // 'response_mode': 'query',
-        pkce: 'true',
-        // 'post_logout_redirect_uri': '/'
-      });
-      provider.addScope('offline_access email profile openid');
-      signInWithPopup(this.auth, provider)
-        .then(result => {
-          // This gives you a Nextcloud Access Token. You can use it to access the Nextcloud API.
-          const credential = OAuthProvider.credentialFromResult(result);
-          const token = credential?.accessToken;
-
-          console.log('OICD2 login successful, token:', token);
-          console.log('User info:', result);
-
-          fetch('https://preview.backend.goslar-id.ceconsoft.de/connect/userinfo', {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
-            .then(response => response.json())
-            .then(data => {
-              console.log('User info from OICD provider:', data);
-            })
-            .catch(error => {
-              console.error('Error fetching user info from OICD provider:', error);
-            });
-
-          // The signed-in user info.
-          const user = result.user;
-        })
-        .catch(error => {
-          console.error('OICD2 login error:', error);
-        });
-    } catch (error: any) {
-      console.error('OICD login error:', error);
-      throw this.handleAuthError(error);
-    }
-  }
-
   /**
-   * Sign out the current user
+   * Sign in via the Goslar-ID OIDC provider. On success the Goslar-ID access
+   * token is stored in `oidcAccessToken$` for use by other services that need
+   * to call the Goslar-ID API directly.
    */
-  async signOut(): Promise<void> {
-    try {
-      await signOut(this.auth);
-      console.log('User signed out successfully');
-    } catch (error: any) {
-      console.error('Sign out error:', error);
-      throw this.handleAuthError(error);
-    }
-  }
-
-  /**
-   * Send password reset email
-   */
-  async resetPassword(email: string): Promise<void> {
+  async loginWithOIDC(): Promise<UserCredential> {
     try {
       this.loadingSubject.next(true);
 
-      await sendPasswordResetEmail(this.auth, email);
-      console.log('Password reset email sent to:', email);
+      const provider = new OAuthProvider('oidc.goslar_id');
+      provider.setCustomParameters({ pkce: 'true' });
+      provider.addScope('offline_access email profile openid');
+
+      const result = await signInWithPopup(this.auth, provider);
+
+      // Extract and store the Goslar-ID access token for downstream API use
+      const credential = OAuthProvider.credentialFromResult(result);
+      if (credential?.accessToken) {
+        this.oidcAccessTokenSubject.next(credential.accessToken);
+      }
+
+      return result;
     } catch (error: any) {
-      console.error('Password reset error:', error);
       throw this.handleAuthError(error);
     } finally {
       this.loadingSubject.next(false);
     }
   }
 
-  /**
-   * Update user profile
-   */
-  async updateUserProfile(updates: { displayName?: string; photoURL?: string }): Promise<void> {
+  async signOut(): Promise<void> {
     try {
-      const user = this.currentUser;
-      if (!user) {
-        throw new Error('No user signed in');
-      }
-
-      await updateProfile(user, updates);
-      console.log('User profile updated successfully');
+      await signOut(this.auth);
     } catch (error: any) {
-      console.error('Profile update error:', error);
       throw this.handleAuthError(error);
     }
   }
 
-  /**
-   * Handle Firebase auth errors and provide user-friendly messages
-   */
+  async resetPassword(email: string): Promise<void> {
+    try {
+      this.loadingSubject.next(true);
+      await sendPasswordResetEmail(this.auth, email);
+    } catch (error: any) {
+      throw this.handleAuthError(error);
+    } finally {
+      this.loadingSubject.next(false);
+    }
+  }
+
+  async updateUserProfile(updates: { displayName?: string; photoURL?: string }): Promise<void> {
+    try {
+      const user = this.currentUser;
+      if (!user) throw new Error('Kein Benutzer angemeldet');
+      await updateProfile(user, updates);
+    } catch (error: any) {
+      throw this.handleAuthError(error);
+    }
+  }
+
   private handleAuthError(error: any): AuthError {
-    let message = 'An unknown error occurred';
+    let message: string;
 
     switch (error.code) {
       case 'auth/email-already-in-use':
-        message = 'This email address is already registered. Please sign in instead.';
+        message = 'Diese E-Mail-Adresse ist bereits registriert.';
         break;
       case 'auth/weak-password':
-        message = 'Password is too weak. Please choose a stronger password.';
+        message = 'Das Passwort ist zu schwach. Bitte wähle ein stärkeres Passwort.';
         break;
       case 'auth/invalid-email':
-        message = 'Please enter a valid email address.';
+        message = 'Bitte gib eine gültige E-Mail-Adresse ein.';
         break;
       case 'auth/user-not-found':
-        message = 'No account found with this email address.';
+        message = 'Kein Konto mit dieser E-Mail-Adresse gefunden.';
         break;
       case 'auth/wrong-password':
-        message = 'Incorrect password. Please try again.';
+        message = 'Falsches Passwort. Bitte versuche es erneut.';
         break;
       case 'auth/too-many-requests':
-        message = 'Too many failed attempts. Please try again later.';
+        message = 'Zu viele fehlgeschlagene Versuche. Bitte versuche es später erneut.';
         break;
       case 'auth/network-request-failed':
-        message = 'Network error. Please check your internet connection.';
+        message = 'Netzwerkfehler. Bitte überprüfe deine Internetverbindung.';
         break;
       case 'auth/invalid-credential':
-        message = 'Invalid email or password. Please check your credentials.';
+        message = 'Ungültige Anmeldedaten. Bitte überprüfe E-Mail und Passwort.';
+        break;
+      case 'auth/popup-closed-by-user':
+        message = 'Anmeldung abgebrochen.';
         break;
       default:
-        message = error.message || 'Authentication failed. Please try again.';
+        message = error.message || 'Anmeldung fehlgeschlagen. Bitte versuche es erneut.';
     }
 
-    return {
-      code: error.code || 'unknown-error',
-      message,
-    };
+    return { code: error.code ?? 'unknown-error', message };
   }
 }

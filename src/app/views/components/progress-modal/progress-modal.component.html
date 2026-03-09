@@ -113,7 +113,7 @@
               <img
                 [src]="badge.imageUrl"
                 [alt]="badge.name"
-                onerror="this.src='assets/icon/default-badge.svg'"
+                onerror="this.src = 'assets/icon/default-badge.svg'"
               />
             </div>
             <ion-chip [color]="getBadgeColor(badge)">
@@ -157,7 +157,7 @@
               <ion-text color="medium">
                 <p>Melde dich an, um deinen Fortschritt zu speichern und Abzeichen zu sammeln!</p>
               </ion-text>
-              <ion-button expand="block" class="goslar-id-button" (click)="loginWithOICD()">
+              <ion-button expand="block" class="goslar-id-button" (click)="loginWithOIDC()">
                 <ion-icon name="cloud-outline" slot="start"></ion-icon>
                 Mit GoslarID anmelden
               </ion-button>

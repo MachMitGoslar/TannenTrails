@@ -1,4 +1,3 @@
-import { documentId } from '@angular/fire/firestore';
 import { MultipleChoiceQuestion, Question } from './questions.model';
 
 export class Station {
@@ -9,7 +8,7 @@ export class Station {
 
   positionLat: number = 0;
   positionLng: number = 0;
-  radius: number = 50;
+  radius: number = 25;
 
   question?: Question = new MultipleChoiceQuestion('test');
   nextStationId?: string = '';

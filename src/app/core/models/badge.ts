@@ -1,7 +1,4 @@
-import { inject } from '@angular/core';
-
-import { DocumentSnapshot, Firestore } from '@angular/fire/firestore';
-import { doc, FieldValue, getDoc, Timestamp } from '@firebase/firestore';
+import { doc, DocumentSnapshot, Firestore, getDoc } from '@angular/fire/firestore';
 
 // Badge Types
 export type BadgeType = 'normal' | 'tiered' | 'collection' | 'repeating';

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, AfterViewInit, HostListener, inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon } from '@ionic/angular/standalone';
 import {
   PathData,
@@ -19,9 +19,9 @@ import { Router } from '@angular/router';
 import { LocationService } from 'src/app/core/services/location-service';
 import { NotificationService } from 'src/app/core/services/notification.service';
 import { ProgressModalService } from 'src/app/core/services/progress-modal.service';
-import { map, polyline } from 'leaflet';
 import { GameService } from 'src/app/core/services/game-service';
-import { Observable, Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { StationBarComponent } from '../station-bar/station-bar.component';
 import { addIcons } from 'ionicons';
 import {
@@ -49,7 +49,7 @@ import { environment } from 'src/environments/environment';
     StationBarComponent,
   ],
 })
-export class OverviewComponent implements OnInit, AfterViewInit {
+export class OverviewComponent implements OnInit, AfterViewInit, OnDestroy {
   private map!: L.Map;
   private path?: L.Polyline;
   private trackingLine?: L.Polyline;
@@ -64,6 +64,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   private activeStationObserver?: Subscription;
   private bearingSubscription?: Subscription;
   private offlineTileLayer?: TileLayerOffline;
+  private destroy$ = new Subject<void>();
   private smoothedBearing = 0;
 
   public router = inject(Router);
@@ -149,7 +150,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   setupStationObservers() {
-    this.gameService.$stations.subscribe({
+    this.gameService.$stations.pipe(takeUntil(this.destroy$)).subscribe({
       next: stationData => {
         console.log('Updating station markers on map', stationData);
         // Clear existing markers
@@ -296,34 +297,44 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   setupLocation() {
-    this.locationService.watchPosition(environment.mockGps).subscribe(
-      position => {
-        if (position != null) {
-          console.log('Position:', position);
-          const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
-          const accuracy = position.coords.accuracy;
+    this.locationService
+      .watchPosition(environment.mockGps)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        position => {
+          if (position != null) {
+            console.log('Position:', position);
+            const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
+            const accuracy = position.coords.accuracy;
 
-          this.userLayer.clearLayers();
+            this.userLayer.clearLayers();
 
-          L.circle(latLng, { radius: accuracy, color: 'blue', opacity: 0.2 }).addTo(this.userLayer);
+            L.circle(latLng, { radius: accuracy, color: 'blue', opacity: 0.2 }).addTo(
+              this.userLayer
+            );
 
-          L.marker(latLng, {
-            icon: L.icon({
-              iconUrl: 'assets/map/fox.svg',
-              iconSize: [40, 40],
-              iconAnchor: [20, 40],
-            }),
-            zIndexOffset: 1000,
-            attribution: 'User Location',
-          }).addTo(this.userLayer);
-          this.setupUserPath(latLng);
+            L.marker(latLng, {
+              icon: L.icon({
+                iconUrl: 'assets/map/fox.svg',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40],
+              }),
+              zIndexOffset: 1000,
+              attribution: 'User Location',
+            }).addTo(this.userLayer);
+            this.setupUserPath(latLng);
+          }
+        },
+        error => {
+          console.error('Error getting user position:', error);
+          this.notificationService.gpsUnavailable();
         }
-      },
-      error => {
-        console.error('Error getting user position:', error);
-        this.notificationService.gpsUnavailable();
-      }
-    );
+      );
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   centerOnUser(): void {
