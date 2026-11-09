@@ -6,7 +6,7 @@ Phase 2 is pure file moves so that logic changes in later phases stay reviewable
 | #   | Phase                                     | Status |
 | --- | ----------------------------------------- | ------ |
 | 0   | Security                                  | ☐      |
-| 1   | Cleanup & bug fixes                       | ☐      |
+| 1   | Cleanup & bug fixes                       | ✅     |
 | 2   | Restructure (moves only)                  | ☐      |
 | 3   | Models, state, content repository seam    | ☐      |
 | 4   | Tooling & baseline tests                  | ☐      |
@@ -19,20 +19,20 @@ Phase 2 is pure file moves so that logic changes in later phases stay reviewable
 
 ## 0. Security
 
-- [ ] Rotate the SFTP password in `sync_config.jsonc`; replace password deploys with SSH-key deploys from CI (GitHub Secrets).
+- [ ] Rotate the SFTP password in `sync_config.jsonc`; replace the manual SFTP upload with the buddy.works pipeline (credentials stored there, not in the repo folder).
 - [ ] Revoke/restrict the Google Maps key leaked in git history (commit `5a413f1`); remove `googleMapsApiKey` from environments.
-- [ ] Remove `console.log('Environment:', environment)` from `src/main.ts`.
+- [x] Remove `console.log('Environment:', environment)` from `src/main.ts`.
 
 ## 1. Cleanup & bug fixes
 
-- [ ] Remove unused deps: `@angular/google-maps`, `leaflet-gpx`, `leaflet-providers`, `@types/leaflet-providers`.
-- [ ] Remove dead code: `GameService.writeStateToFirestore`, `track-points.json`, unused imports in models/dataset.
-- [ ] `StationPage`: single position stream (currently starts two watchers), no mutation of shared `StationData`, not-found handling for unknown ids.
-- [ ] `LocationService`: watchers are never cleared — implement proper start/stop for browser and Capacitor.
-- [ ] `OverviewComponent`: add teardown (`takeUntilDestroyed`), stop recreating the map by DOM id, diff markers instead of full rebuild.
-- [ ] `GameService` must not hard-depend on `Firestore` (app crashes when Firebase is disabled).
-- [ ] Fix `solveRandomStation` (index used as id; ids are `'1'`–`'11'`).
-- [ ] Fix `.gitignore` vs tracked `memory/MEMORY.md`.
+- [x] Remove unused deps: `@angular/google-maps`, `leaflet-gpx`, `leaflet-providers`, `@types/leaflet-providers`.
+- [x] Remove dead code: `GameService.writeStateToFirestore`, `track-points.json`, unused imports in models/dataset.
+- [x] `StationPage`: single position stream (currently starts two watchers), no mutation of shared `StationData`, not-found handling for unknown ids.
+- [x] `LocationService`: watchers are never cleared — implement proper start/stop for browser and Capacitor.
+- [x] `OverviewComponent`: add teardown (`takeUntilDestroyed`), stop recreating the map by DOM id. (Marker diffing moved to Phase 6.)
+- [x] `GameService` must not hard-depend on `Firestore` (app crashes when Firebase is disabled).
+- [x] Fix `solveRandomStation` (index used as id; ids are `'1'`–`'11'`).
+- [x] Fix `.gitignore` vs tracked `memory/MEMORY.md`.
 
 ## 2. Restructure
 
@@ -66,7 +66,7 @@ scripts/gpx-to-ts.js
 - [ ] Models as interfaces; `Question` as discriminated union (no placeholder defaults).
 - [ ] Signals for `GameService` / `LocationService` state; consistent naming.
 - [ ] `TrailRepository` interface with `BundledTrailRepository` (later `HttpTrailRepository`, Phase 7).
-- [ ] Firebase (badges) optional via injection token / provider factory.
+- [ ] Firebase (badges) optional via injection token / provider factory — `AuthService` and `BadgeService` (progress modal) still inject Firebase unconditionally.
 
 ## 4. Tooling & baseline tests
 
@@ -135,12 +135,21 @@ App: `HttpTrailRepository` caches the last version on the device; falls back to 
 - Rate limiting on login and upload; security headers incl. strict CSP; public API is GET-only.
 - Migrations via drizzle-kit in the repo.
 
-### Docker & operations
+### Deployment & operations
 
-- Multi-stage `Dockerfile`: one image serving API, `/admin`, `/media` (and optionally the web build of the app).
-- `docker-compose.yml`: app container + named volumes for the SQLite DB and media; reverse proxy with TLS (Plesk nginx or Caddy).
-- Continuous SQLite backup (Litestream to S3-compatible storage) plus nightly snapshot with rotation.
-- CI builds and pushes the image to GHCR; deploy over SSH (`docker compose pull && docker compose up -d`) with key from GitHub Secrets; `/healthz` endpoint.
+Two independently deployed parts:
+
+1. **Backend container** (API + `/admin` + `/media`)
+   - Small multi-stage `Dockerfile` (Node 22 slim/alpine, non-root user, only production deps).
+   - Runs on the same host on its own local port (e.g. `127.0.0.1:8080`); the host's existing proxy forwards a path or subdomain (e.g. `api.wald.goslar.app`) to it and terminates TLS.
+   - `docker-compose.yml`: one service, named volumes for the SQLite DB and media, `restart: unless-stopped`, `/healthz` healthcheck, memory limit.
+   - Admin app stays inside the container so admin login cookies remain same-origin.
+   - Continuous SQLite backup (Litestream to S3-compatible storage) plus nightly snapshot with rotation.
+   - CI builds and pushes the image to GHCR; the host pulls and restarts (`docker compose pull && docker compose up -d`).
+2. **Web app** (Ionic/Angular build)
+   - Built in CI, deployed separately via buddy.works to the existing web root.
+   - API base URL injected per environment at build time.
+   - Because app and API live on different origins, the public read-only API allows CORS `GET` for the web app origin and the Capacitor origins (`capacitor://localhost`, `https://localhost`). Admin routes allow no cross-origin access.
 
 ### Admin app
 
