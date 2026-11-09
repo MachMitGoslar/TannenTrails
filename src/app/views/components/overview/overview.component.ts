@@ -1,4 +1,13 @@
-import { Component, OnInit, AfterViewInit, HostListener, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  OnDestroy,
+  inject,
+  viewChild,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon } from '@ionic/angular';
 import {
   PathData,
@@ -10,17 +19,14 @@ import {
 import { Station } from 'src/app/core/models/station.model';
 
 import * as L from 'leaflet';
-import 'leaflet-gpx';
-import 'leaflet-providers';
 import 'leaflet-rotate';
 import { tileLayerOffline, savetiles, TileLayerOffline } from 'leaflet.offline';
 import { Router } from '@angular/router';
 import { LocationService } from 'src/app/core/services/location-service';
 import { NotificationService } from 'src/app/core/services/notification.service';
 import { ProgressModalService } from 'src/app/core/services/progress-modal.service';
-import { map, polyline } from 'leaflet';
 import { GameService } from 'src/app/core/services/game-service';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { StationBarComponent } from '../station-bar/station-bar.component';
 import { addIcons } from 'ionicons';
 import {
@@ -40,7 +46,9 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./overview.component.scss'],
   imports: [IonContent, IonFab, IonFabButton, IonFabList, IonIcon, StationBarComponent],
 })
-export class OverviewComponent implements OnInit, AfterViewInit {
+export class OverviewComponent implements AfterViewInit, OnDestroy {
+  private readonly mapContainer = viewChild.required<ElementRef<HTMLDivElement>>('mapContainer');
+  private readonly destroyRef = inject(DestroyRef);
   private map!: L.Map;
   private path?: L.Polyline;
   private trackingLine?: L.Polyline;
@@ -77,12 +85,19 @@ export class OverviewComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngOnInit() {
-    console.log('OverviewComponent initialized');
+  ngOnDestroy(): void {
+    this.activeStationObserver?.unsubscribe();
+    this.bearingSubscription?.unsubscribe();
+    this.offlineTileLayer?.off();
+    this.map?.remove();
   }
 
   ngAfterViewInit() {
-    this.map = L.map('map', { rotate: true, bearing: 0, zoomControl: false });
+    this.map = L.map(this.mapContainer().nativeElement, {
+      rotate: true,
+      bearing: 0,
+      zoomControl: false,
+    });
     this.map.setView([51.9045, 10.4196], 13);
 
     setTimeout(() => {
@@ -144,7 +159,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   setupStationObservers() {
-    this.gameService.$stations.subscribe({
+    this.gameService.$stations.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: stationData => {
         console.log('Updating station markers on map', stationData);
         // Clear existing markers
@@ -291,34 +306,39 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   setupLocation() {
-    this.locationService.watchPosition(environment.mockGps).subscribe(
-      position => {
-        if (position != null) {
-          console.log('Position:', position);
-          const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
-          const accuracy = position.coords.accuracy;
+    this.locationService
+      .watchPosition()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        position => {
+          if (position != null) {
+            console.log('Position:', position);
+            const latLng = L.latLng(position.coords.latitude, position.coords.longitude);
+            const accuracy = position.coords.accuracy;
 
-          this.userLayer.clearLayers();
+            this.userLayer.clearLayers();
 
-          L.circle(latLng, { radius: accuracy, color: 'blue', opacity: 0.2 }).addTo(this.userLayer);
+            L.circle(latLng, { radius: accuracy, color: 'blue', opacity: 0.2 }).addTo(
+              this.userLayer
+            );
 
-          L.marker(latLng, {
-            icon: L.icon({
-              iconUrl: 'assets/map/fox.svg',
-              iconSize: [40, 40],
-              iconAnchor: [20, 40],
-            }),
-            zIndexOffset: 1000,
-            attribution: 'User Location',
-          }).addTo(this.userLayer);
-          this.setupUserPath(latLng);
+            L.marker(latLng, {
+              icon: L.icon({
+                iconUrl: 'assets/map/fox.svg',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40],
+              }),
+              zIndexOffset: 1000,
+              attribution: 'User Location',
+            }).addTo(this.userLayer);
+            this.setupUserPath(latLng);
+          }
+        },
+        error => {
+          console.error('Error getting user position:', error);
+          this.notificationService.gpsUnavailable();
         }
-      },
-      error => {
-        console.error('Error getting user position:', error);
-        this.notificationService.gpsUnavailable();
-      }
-    );
+      );
   }
 
   centerOnUser(): void {
@@ -387,22 +407,6 @@ export class OverviewComponent implements OnInit, AfterViewInit {
     control._saveTiles();
   }
 
-  private geoOffset(origin: L.LatLng, bearingDeg: number, distanceMeters: number): L.LatLng {
-    const R = 6371000;
-    const δ = distanceMeters / R;
-    const θ = (bearingDeg * Math.PI) / 180;
-    const φ1 = (origin.lat * Math.PI) / 180;
-    const λ1 = (origin.lng * Math.PI) / 180;
-    const φ2 = Math.asin(Math.sin(φ1) * Math.cos(δ) + Math.cos(φ1) * Math.sin(δ) * Math.cos(θ));
-    const λ2 =
-      λ1 +
-      Math.atan2(
-        Math.sin(θ) * Math.sin(δ) * Math.cos(φ1),
-        Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2)
-      );
-    return L.latLng((φ2 * 180) / Math.PI, (λ2 * 180) / Math.PI);
-  }
-
   private calculateBearing(from: L.LatLng, to: L.LatLng): number {
     const φ1 = (from.lat * Math.PI) / 180;
     const φ2 = (to.lat * Math.PI) / 180;
@@ -421,7 +425,6 @@ export class OverviewComponent implements OnInit, AfterViewInit {
 
     let closestPoint = this.activeStationMarker.getLatLng();
 
-    let userPath = (this.map as any)._userPath as L.Polyline;
     if (!this.trackingLine) {
       this.trackingLine = L.polyline([user_position, closestPoint], {
         color: 'red',

@@ -1,7 +1,7 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Component, inject, Signal, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { DecimalPipe } from '@angular/common';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import * as L from 'leaflet';
 import {
   IonContent,
@@ -16,24 +16,42 @@ import {
   IonCardContent,
   IonIcon,
   IonButton,
-  IonSpinner,
 } from '@ionic/angular';
+import { Position } from '@capacitor/geolocation';
+import { map, scan } from 'rxjs';
+import { headingTo, insideCircle } from 'geolocation-utils';
 import { Station } from 'src/app/core/models/station.model';
 import { StationData, QuestionData } from 'src/app/core/models/dataset';
-import { ActivatedRoute } from '@angular/router';
-import { MultipleChoiceQuestion } from 'src/app/core/models/questions.model';
-import { map, Observable } from 'rxjs';
 import { LocationService } from 'src/app/core/services/location-service';
-import { headingTo, insideCircle } from 'geolocation-utils';
-import { QuestionCardComponent } from '../../components/question-card/question-card.component';
 import { GameService } from 'src/app/core/services/game-service';
+import {
+  QuestionAnswer,
+  QuestionCardComponent,
+} from '../../components/question-card/question-card.component';
 import { StarsAnimationComponent } from '../../components/animations/stars/stars-animation.component';
+
+interface StationNavigation {
+  /** Distance to the station in metres, null while no position is known. */
+  distance: number | null;
+  /** Latched: once the user reached the station it stays true, so GPS jitter cannot hide the quiz. */
+  inRadius: boolean;
+  /** Compass direction the user is moving in. */
+  heading: string;
+  /** Compass direction from the user to the station. */
+  headingToStation: string;
+}
+
+const NO_NAVIGATION: StationNavigation = {
+  distance: null,
+  inRadius: false,
+  heading: 'Unknown',
+  headingToStation: 'Unknown',
+};
 
 @Component({
   selector: 'app-station',
   templateUrl: './station.page.html',
   styleUrls: ['./station.page.scss'],
-  standalone: true,
   imports: [
     IonContent,
     IonHeader,
@@ -47,109 +65,82 @@ import { StarsAnimationComponent } from '../../components/animations/stars/stars
     IonCardContent,
     IonIcon,
     IonButton,
-    IonSpinner,
-    CommonModule,
-    FormsModule,
+    DecimalPipe,
     RouterModule,
     QuestionCardComponent,
     StarsAnimationComponent,
   ],
 })
-export class StationPage implements OnInit {
-  station!: Station;
-  heading: Observable<string> = new Observable<string>();
-  headingToStation: string = '';
-  distanceToStation: Observable<number> = new Observable<number>();
-  inRadius: boolean = false;
-  showQuestionCard: boolean = true;
-  successAnimationDone: boolean = false;
-  questionAnsweredSuccessfully: boolean = false;
-
-  // Dependency injections
+export class StationPage {
   private route = inject(ActivatedRoute);
   private locationService = inject(LocationService);
   private gameService = inject(GameService);
 
+  /** Undefined when the route points to an unknown station id. */
+  readonly station: Station | undefined = this.resolveStation();
+  readonly navigation: Signal<StationNavigation> = this.setupNavigation();
+
+  questionAnsweredSuccessfully = false;
+  successAnimationDone = false;
+
   constructor() {
-    const stationId = this.route.snapshot.paramMap.get('id');
-    if (stationId === null) {
-      throw new Error('Station ID is null');
-    }
-    this.station = StationData.find(s => s.id === stationId)!;
-    this.station.question = QuestionData[stationId];
-    if (this.gameService.isStationSolved(this.station)) {
+    if (this.station && this.gameService.isStationSolved(this.station)) {
       this.questionAnsweredSuccessfully = true;
       this.successAnimationDone = true;
-      this.showQuestionCard = false;
     }
-    // Icons are now preloaded in AppComponent
-    this.setupDistanceObserver();
   }
 
-  ngOnInit() {
-    console.log('Station loaded:', this.station);
+  private resolveStation(): Station | undefined {
+    const stationId = this.route.snapshot.paramMap.get('id');
+    const station = StationData.find(s => s.id === stationId);
+    if (!stationId || !station) {
+      return undefined;
+    }
+    // Copy instead of mutating the shared dataset entry
+    return new Station(station.id, { ...station, question: QuestionData[stationId] });
   }
 
-  // getQuestionOptions(): string[] {
-  //   if (
-  //     this.station?.question &&
-  //     this.station.question instanceof MultipleChoiceQuestion
-  //   ) {
-  //     return this.station.question.options;
-  //   }
-  //   return [];
-  // }
+  private setupNavigation(): Signal<StationNavigation> {
+    const station = this.station;
+    if (!station) {
+      return signal(NO_NAVIGATION).asReadonly();
+    }
+    const target = { lat: station.positionLat, lon: station.positionLng };
+    const targetLatLng = L.latLng(station.positionLat, station.positionLng);
 
-  setupDistanceObserver() {
-    let station_pos = L.latLng(this.station.positionLat, this.station.positionLng);
-
-    this.distanceToStation = this.locationService.watchPosition().pipe(
-      map(position => {
-        if (position) {
-          let distance = station_pos.distanceTo(
-            L.latLng(position.coords.latitude, position.coords.longitude)
-          );
-          this.inRadius = insideCircle(
-            { lat: position.coords.latitude, lon: position.coords.longitude },
-            { lat: this.station.positionLat, lon: this.station.positionLng },
-            this.station.radius
-          );
-
-          return distance;
-        } else {
-          return Infinity;
-        }
-      })
-    );
-    this.heading = this.locationService.watchPosition().pipe(
-      map(
-        position => {
-          if (position) {
-            this.headingToStation = this.locationService.degreesToCompass(
-              headingTo(
-                { lat: position.coords.latitude, lon: position.coords.longitude },
-                { lat: this.station.positionLat, lon: this.station.positionLng }
-              )
-            );
-            return this.locationService.degreesToCompass(position.coords.heading);
-          } else {
-            return 'unklar';
+    // toSignal unsubscribes on destroy, which releases the shared GPS watcher
+    return toSignal(
+      this.locationService.watchPosition().pipe(
+        map((position: Position | null): StationNavigation => {
+          if (!position) {
+            return NO_NAVIGATION;
           }
-        },
-        { defaultValue: 'unklar' }
-      )
+          const { latitude, longitude, heading } = position.coords;
+          const here = { lat: latitude, lon: longitude };
+          return {
+            distance: targetLatLng.distanceTo(L.latLng(latitude, longitude)),
+            inRadius: insideCircle(here, target, station.radius),
+            heading: this.locationService.degreesToCompass(heading),
+            headingToStation: this.locationService.degreesToCompass(headingTo(here, target)),
+          };
+        }),
+        scan((previous, current) => ({
+          ...current,
+          inRadius: previous.inRadius || current.inRadius,
+        }))
+      ),
+      { initialValue: NO_NAVIGATION }
     );
   }
-  handleAnswerSubmission(event: any) {
-    console.log('Answer submitted for station', this.station.id, ':', event);
-    if (event.isCorrect) {
+
+  handleAnswerSubmission(answer: QuestionAnswer): void {
+    if (this.station && answer.isCorrect) {
       this.gameService.solveStation(this.station);
       this.questionAnsweredSuccessfully = true;
     }
   }
 
-  setAnimationDone(event: boolean) {
-    console.log('Animation done event received:', event);
-    this.successAnimationDone = event;
+  setAnimationDone(done: boolean): void {
+    this.successAnimationDone = done;
   }
 }

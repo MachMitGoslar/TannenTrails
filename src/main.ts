@@ -22,8 +22,6 @@ let providers = [
   provideRouter(routes, withPreloading(PreloadAllModules)),
 ];
 
-console.log('Environment:', environment);
-
 if (environment.firebaseConfig.enabled) {
   const firebaseApp = initializeApp(environment.firebaseConfig);
 
