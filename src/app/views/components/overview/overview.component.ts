@@ -1,6 +1,5 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit, AfterViewInit, HostListener, inject } from '@angular/core';
-import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon } from '@ionic/angular/standalone';
+import { IonContent, IonFab, IonFabButton, IonFabList, IonIcon } from '@ionic/angular';
 import {
   PathData,
   Shortcuts,
@@ -39,15 +38,7 @@ import { environment } from 'src/environments/environment';
   selector: 'app-overview',
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
-  imports: [
-    IonContent,
-    IonFab,
-    IonFabButton,
-    IonFabList,
-    IonIcon,
-    CommonModule,
-    StationBarComponent,
-  ],
+  imports: [IonContent, IonFab, IonFabButton, IonFabList, IonIcon, StationBarComponent],
 })
 export class OverviewComponent implements OnInit, AfterViewInit {
   private map!: L.Map;
@@ -128,8 +119,12 @@ export class OverviewComponent implements OnInit, AfterViewInit {
       this.prefetchTiles();
     });
 
+    const style_id = environment.mapboxStyleId;
+    const access_token = environment.mapboxToken;
+
     this.offlineTileLayer = tileLayerOffline(
-      'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
+      `https://api.mapbox.com/styles/v1/rangarian/${style_id}/tiles/256/{z}/{x}/{y}@2x.webp?access_token=${access_token}`,
+
       {
         id: environment.mapboxStyleId,
         accessToken: environment.mapboxToken,

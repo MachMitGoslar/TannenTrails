@@ -17,7 +17,7 @@ import {
   IonIcon,
   IonButton,
   IonSpinner,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { Station } from 'src/app/core/models/station.model';
 import { StationData, QuestionData } from 'src/app/core/models/dataset';
 import { ActivatedRoute } from '@angular/router';

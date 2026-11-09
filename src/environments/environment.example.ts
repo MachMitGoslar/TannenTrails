@@ -14,6 +14,7 @@ export const environment = {
 
   // Firebase project: best-badges-dev
   firebaseConfig: {
+    enabled: true, // set false to disable Firebase; always false in environment.prod.ts
     apiKey: 'YOUR_FIREBASE_API_KEY',
     authDomain: 'YOUR_PROJECT.firebaseapp.com',
     databaseURL: 'https://YOUR_PROJECT-rtdb.europe-west1.firebasedatabase.app',

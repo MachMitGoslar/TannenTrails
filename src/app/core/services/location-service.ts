@@ -87,6 +87,10 @@ export class LocationService {
             altitudeAccuracy: null,
             heading,
             speed: 1.4, // ~5 km/h walking speed
+            magneticHeading: null,
+            trueHeading: null,
+            headingAccuracy: null,
+            course: null,
           },
           timestamp: Date.now(),
         });
@@ -132,6 +136,10 @@ export class LocationService {
               altitude: position.coords.altitude,
               speed: position.coords.speed,
               heading: position.coords.heading,
+              magneticHeading: null,
+              trueHeading: null,
+              headingAccuracy: null,
+              course: null,
             },
           };
           this.my_position$!.next(capacitorPosition);

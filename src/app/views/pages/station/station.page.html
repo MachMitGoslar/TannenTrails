@@ -17,15 +17,17 @@
     </ion-toolbar>
   </ion-header>
   <!-- Hero Image Section -->
-  <div class="hero-section" *ngIf="station">
-    <img [src]="station.imageUrl" [alt]="station.title" class="station-image" />
-    <div class="hero-overlay">
-      <div class="hero-header">
-        <h1 class="station-title">{{ station.title }}</h1>
-        <div class="station-number">Station {{ station.id }}</div>
+  @if (station) {
+    <div class="hero-section">
+      <img [src]="station.imageUrl" [alt]="station.title" class="station-image" />
+      <div class="hero-overlay">
+        <div class="hero-header">
+          <h1 class="station-title">{{ station.title }}</h1>
+          <div class="station-number">Station {{ station.id }}</div>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- Content Section -->
   <div class="content-section">
@@ -58,44 +60,50 @@
     }
 
     <!-- DistanceCard -->
-    <ion-card class="distance-card" *ngIf="!inRadius && !successAnimationDone">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="compass-outline"></ion-icon>
-          Bis zur Station
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-icon name="navigate" [style]="{ 'font-size': '4rem', rotate: '-45deg' }"></ion-icon>
-        @if ((heading | async) !== 'Unknown') {
-          <p>Du läufst in folgende Richtung: {{ heading | async }}°</p>
-        }
-        <p>Die Station befindet sich in Richtung: {{ headingToStation }}</p>
-        <p>Die Entfernung beträgt {{ distanceToStation | async | number: '1.0-0' }} m</p>
-      </ion-card-content>
-    </ion-card>
+    @if (!inRadius && !successAnimationDone) {
+      <ion-card class="distance-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="compass-outline"></ion-icon>
+            Bis zur Station
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-icon name="navigate" [style]="{ 'font-size': '4rem', rotate: '-45deg' }"></ion-icon>
+          @if ((heading | async) !== 'Unknown') {
+            <p>Du läufst in folgende Richtung: {{ heading | async }}°</p>
+          }
+          <p>Die Station befindet sich in Richtung: {{ headingToStation }}</p>
+          <p>Die Entfernung beträgt {{ distanceToStation | async | number: '1.0-0' }} m</p>
+        </ion-card-content>
+      </ion-card>
+    }
 
     <!-- Completion Card (if last station) -->
-    <ion-card class="completion-card" *ngIf="successAnimationDone && questionAnsweredSuccessfully">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="trophy-outline"></ion-icon>
-          Herzlichen Glückwunsch!
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <p>Du hast diese Station abgeschlossen. Zurück zu Karte?</p>
-        <ion-button expand="block" color="success" routerLink="/map" class="home-button">
-          <ion-icon name="home-outline" slot="start"></ion-icon>
-          Zurück zur Karte
-        </ion-button>
-      </ion-card-content>
-    </ion-card>
+    @if (successAnimationDone && questionAnsweredSuccessfully) {
+      <ion-card class="completion-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="trophy-outline"></ion-icon>
+            Herzlichen Glückwunsch!
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p>Du hast diese Station abgeschlossen. Zurück zu Karte?</p>
+          <ion-button expand="block" color="success" routerLink="/map" class="home-button">
+            <ion-icon name="home-outline" slot="start"></ion-icon>
+            Zurück zur Karte
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    }
   </div>
 
   <!-- Loading State -->
-  <div class="loading-container" *ngIf="!station">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Station wird geladen...</p>
-  </div>
+  @if (!station) {
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Station wird geladen...</p>
+    </div>
+  }
 </ion-content>
