@@ -1,4 +1,3 @@
-import { image } from 'ionicons/icons';
 import { ExternalQuestion, MultipleChoiceQuestion } from './questions.model';
 import { Station } from './station.model';
 

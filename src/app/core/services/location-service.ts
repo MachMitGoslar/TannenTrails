@@ -4,6 +4,7 @@ import { Observable, BehaviorSubject, map } from 'rxjs';
 import { Geolocation, Position, PermissionStatus } from '@capacitor/geolocation';
 import { PathData } from '../models/dataset';
 import { insideCircle } from 'geolocation-utils';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +16,7 @@ export class LocationService {
   public my_position$: BehaviorSubject<Position | null> = new BehaviorSubject<Position | null>(
     null
   );
-  private currentWatchId: string | number | null = null;
+  private currentWatchId: number | null = null;
 
   constructor() {}
 
@@ -65,41 +66,85 @@ export class LocationService {
   }
 
   private mockIntervalId?: ReturnType<typeof setInterval>;
+  private capacitorWatchId?: string;
+  private watcherCount = 0;
+  private watching = false;
 
-  watchPosition(mock: boolean = false): Observable<Position | null> {
+  /**
+   * Returns a stream of positions backed by a single shared device watcher.
+   * The watcher starts with the first subscriber and is stopped when the last
+   * subscriber unsubscribes, so callers must unsubscribe (e.g. via takeUntilDestroyed).
+   */
+  watchPosition(mock: boolean = environment.mockGps): Observable<Position | null> {
+    return new Observable<Position | null>(subscriber => {
+      if (this.watcherCount++ === 0) {
+        this.startWatching(mock);
+      }
+      const subscription = this.my_position$.subscribe(subscriber);
+      return () => {
+        subscription.unsubscribe();
+        if (--this.watcherCount === 0) {
+          this.stopWatching();
+        }
+      };
+    });
+  }
+
+  private startWatching(mock: boolean): void {
+    this.watching = true;
     if (mock) {
-      const data = PathData;
-      let index = 0;
-
-      if (this.mockIntervalId) clearInterval(this.mockIntervalId);
-
-      this.mockIntervalId = setInterval(() => {
-        const cur = data[index];
-        const next = data[(index + 1) % data.length];
-        const heading = this.bearingBetween(cur[0], cur[1], next[0], next[1]);
-
-        this.my_position$.next({
-          coords: {
-            latitude: cur[0],
-            longitude: cur[1],
-            accuracy: 5,
-            altitude: null,
-            altitudeAccuracy: null,
-            heading,
-            speed: 1.4, // ~5 km/h walking speed
-          },
-          timestamp: Date.now(),
-        });
-
-        index = (index + 1) % data.length;
-      }, 800); // slightly faster than real-time for easy testing
-
-      return this.my_position$.asObservable();
+      this.startMockWatch();
+    } else {
+      this.setupPositionObservable();
     }
+  }
 
-    this.setupPositionObservable();
+  private stopWatching(): void {
+    this.watching = false;
+    if (this.mockIntervalId) {
+      clearInterval(this.mockIntervalId);
+      this.mockIntervalId = undefined;
+    }
+    if (this.currentWatchId !== null) {
+      navigator.geolocation?.clearWatch(this.currentWatchId);
+      this.currentWatchId = null;
+    }
+    if (this.capacitorWatchId) {
+      Geolocation.clearWatch({ id: this.capacitorWatchId });
+      this.capacitorWatchId = undefined;
+    }
+  }
 
-    return this.my_position$.asObservable();
+  private startMockWatch(): void {
+    const data = PathData;
+    let index = 0;
+
+    if (this.mockIntervalId) clearInterval(this.mockIntervalId);
+
+    this.mockIntervalId = setInterval(() => {
+      const cur = data[index];
+      const next = data[(index + 1) % data.length];
+      const heading = this.bearingBetween(cur[0], cur[1], next[0], next[1]);
+
+      this.my_position$.next({
+        coords: {
+          latitude: cur[0],
+          longitude: cur[1],
+          accuracy: 5,
+          altitude: null,
+          altitudeAccuracy: null,
+          heading,
+          speed: 1.4, // ~5 km/h walking speed
+          magneticHeading: null,
+          trueHeading: null,
+          headingAccuracy: null,
+          course: null,
+        },
+        timestamp: Date.now(),
+      });
+
+      index = (index + 1) % data.length;
+    }, 800); // slightly faster than real-time for easy testing
   }
 
   private bearingBetween(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -111,7 +156,7 @@ export class LocationService {
     return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
   }
 
-  setupPositionObservable() {
+  private setupPositionObservable() {
     if (!this.platform.is('hybrid')) {
       // Use browser native geolocation API
       if (!navigator.geolocation) {
@@ -132,6 +177,10 @@ export class LocationService {
               altitude: position.coords.altitude,
               speed: position.coords.speed,
               heading: position.coords.heading,
+              magneticHeading: null,
+              trueHeading: null,
+              headingAccuracy: null,
+              course: null,
             },
           };
           this.my_position$!.next(capacitorPosition);
@@ -148,13 +197,6 @@ export class LocationService {
       );
     } else {
       // Use Capacitor geolocation for mobile apps
-      // Clear any existing watch
-      if (this.currentWatchId) {
-        if (typeof this.currentWatchId === 'number') {
-          navigator.geolocation.clearWatch(this.currentWatchId);
-        }
-      }
-
       Geolocation.watchPosition(
         {
           enableHighAccuracy: true,
@@ -170,7 +212,12 @@ export class LocationService {
           }
         }
       ).then(capacitorWatchId => {
-        this.currentWatchId = capacitorWatchId;
+        if (this.watching) {
+          this.capacitorWatchId = capacitorWatchId;
+        } else {
+          // All subscribers left before the native watch was registered
+          Geolocation.clearWatch({ id: capacitorWatchId });
+        }
       });
     }
   }

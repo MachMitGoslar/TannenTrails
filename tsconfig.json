@@ -4,11 +4,14 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@models": ["src/app/core/models"]
+      "@models": [
+        "src/app/core/models"
+      ]
     },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -17,12 +20,10 @@
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "es2022",
     "module": "es2020",
-    "lib": ["es2018", "dom"],
-
     "useDefineForClassFields": false
   },
   "angularCompilerOptions": {

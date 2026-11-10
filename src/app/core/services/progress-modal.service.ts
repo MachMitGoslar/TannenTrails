@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { ModalController } from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular';
 import { ProgressModalComponent } from '../../views/components/progress-modal/progress-modal.component';
 
 @Injectable({

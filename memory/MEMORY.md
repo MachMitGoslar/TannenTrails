@@ -2,7 +2,7 @@
 
 ## What It Is
 
-GPS-guided forest trail app (Angular 20 + Ionic 8 + Capacitor 7) for Goslar Stadtwald, Germany. Built by MachMit!Goslar. Users walk 11 stations, answer multiple-choice quizzes when within 25 m, earn Firebase badges.
+GPS-guided forest trail app (Angular 21 + Ionic 9 + Capacitor 8) for Goslar Stadtwald, Germany. Built by MachMit!Goslar. Users walk 11 stations, answer multiple-choice quizzes when within 25 m, earn Firebase badges.
 
 ## Key Architecture Points
 

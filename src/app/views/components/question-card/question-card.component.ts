@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter, OnChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import {
   IonCard,
@@ -13,7 +13,7 @@ import {
   IonLabel,
   IonInput,
   IonButton,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import {
   Question,
   MultipleChoiceQuestion,
@@ -33,7 +33,6 @@ export interface QuestionAnswer {
   styleUrls: ['./question-card.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     IonCard,
     IonCardHeader,

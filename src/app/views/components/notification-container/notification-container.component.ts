@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Subscription } from 'rxjs';
 import { NotificationComponent } from '../notfication/notfication.component';
 import {
@@ -11,14 +11,15 @@ import {
   selector: 'app-notification-container',
   template: `
     <div class="notifications-container">
-      <app-notification
-        *ngFor="let notification of notifications"
-        [config]="notification"
-        [visible]="true"
-        (dismissed)="onNotificationDismissed(notification.id)"
-        (actionClicked)="onNotificationAction(notification.id)"
-      >
-      </app-notification>
+      @for (notification of notifications; track notification) {
+        <app-notification
+          [config]="notification"
+          [visible]="true"
+          (dismissed)="onNotificationDismissed(notification.id)"
+          (actionClicked)="onNotificationAction(notification.id)"
+        >
+        </app-notification>
+      }
     </div>
   `,
   styles: [
@@ -45,7 +46,7 @@ import {
     `,
   ],
   standalone: true,
-  imports: [CommonModule, NotificationComponent],
+  imports: [NotificationComponent],
 })
 export class NotificationContainerComponent implements OnInit, OnDestroy {
   notifications: ActiveNotification[] = [];
