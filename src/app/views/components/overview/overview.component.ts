@@ -138,7 +138,7 @@ export class OverviewComponent implements AfterViewInit, OnDestroy {
     const access_token = environment.mapboxToken;
 
     this.offlineTileLayer = tileLayerOffline(
-      `https://api.mapbox.com/styles/v1/rangarian/${style_id}/tiles/256/{z}/{x}/{y}@2x.webp?access_token=${access_token}`,
+      `https://api.mapbox.com/styles/v1/rangarian/${style_id}/tiles/512/{z}/{x}/{y}@2x.webp?access_token=${access_token}`,
 
       {
         id: environment.mapboxStyleId,
