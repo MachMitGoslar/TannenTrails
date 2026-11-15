@@ -6,7 +6,7 @@ on:
     types: [ opened, synchronize, reopened, ready_for_review ]
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22' # Capacitor 8 CLI requires Node >= 22
   IONIC_CLI_VERSION: 'latest'
 
 jobs:
@@ -99,6 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     strategy:
+      fail-fast: false
       matrix:
         build-target: [ 'web', 'android' ]
 
@@ -134,6 +135,7 @@ jobs:
       - name: 'Android Build vorbereiten'
         if: matrix.build-target == 'android'
         run: |
+          ionic build --prod
           ionic cap add android
           ionic cap sync android
           echo "✅ Android Build Vorbereitung erfolgreich"

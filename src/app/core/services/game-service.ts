@@ -1,8 +1,7 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Station } from '../models/station.model';
 import { StationData } from '../models/dataset';
 import { ReplaySubject } from 'rxjs';
-import { collection, Firestore, getDocs, query, where } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -16,8 +15,6 @@ export class GameService {
     solved: Map<string, Station>;
     unsolved: Map<string, Station>;
   }>(1);
-
-  private db = inject(Firestore);
 
   constructor() {
     StationData.forEach(station => {
@@ -56,18 +53,13 @@ export class GameService {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify([...this.solvedStations.keys()]));
   }
 
-  // For testing purposes: solve a random station
+  /** Dev helper: solves one random unsolved station. */
   solveRandomStation(): void {
-    if (this.unsolvedStations.size === 0) {
+    const unsolved = [...this.unsolvedStations.values()];
+    if (unsolved.length === 0) {
       return;
     }
-    const randomIndex = Math.floor(Math.random() * this.unsolvedStations.size);
-    const stationToSolve = this.unsolvedStations.get(String(randomIndex));
-    if (!stationToSolve) {
-      console.log('No station found to solve at index:', randomIndex);
-      return;
-    }
-    this.solveStation(stationToSolve);
+    this.solveStation(unsolved[Math.floor(Math.random() * unsolved.length)]);
   }
 
   private publishState(): void {
@@ -79,19 +71,5 @@ export class GameService {
 
   isStationSolved(station: Station): boolean {
     return this.solvedStations.has(station.id);
-  }
-
-  private writeStateToFirestore(userId: string) {
-    let user_badge_ref = collection(this.db, `users/${userId}/badges`);
-
-    let badge_query = query(user_badge_ref, where('organisationId', '==', 'stadtforst'));
-    getDocs(badge_query).then(querySnapshot => {
-      querySnapshot.forEach(doc => {
-        console.log('User has badge:', doc.id, 'Data:', doc.data());
-        if (doc.exists() && this.solvedStations.get(doc.id)) {
-          //Badge
-        }
-      });
-    });
   }
 }

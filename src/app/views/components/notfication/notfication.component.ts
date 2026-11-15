@@ -19,7 +19,7 @@ import {
   IonRippleEffect,
   AnimationController,
   Animation,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 
 import { doc } from '@angular/fire/firestore';
 

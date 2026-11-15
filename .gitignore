@@ -74,7 +74,8 @@ Thumbs.db
 /src/environments/environment.ts
 /src/environments/environment.prod.ts
 
+www/
 www.zip
 CLAUDE.md
 matters.txt
-memory/
+sync_config.jsonc

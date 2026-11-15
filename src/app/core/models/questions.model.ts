@@ -1,5 +1,3 @@
-import { documentId } from '@angular/fire/firestore';
-
 export enum QuestionType {
   MultipleChoice = 'multiple-choice',
   TrueFalse = 'true-false',

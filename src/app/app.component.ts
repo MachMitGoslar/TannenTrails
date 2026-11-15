@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { IonApp, IonRouterOutlet } from '@ionic/angular';
 import { NotificationComponent } from './views/components/notfication/notfication.component';
 import { NotificationContainerComponent } from './views/components/notification-container/notification-container.component';
 import { addIcons } from 'ionicons';

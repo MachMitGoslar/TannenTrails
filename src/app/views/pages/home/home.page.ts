@@ -8,7 +8,7 @@ import {
   IonItem,
   IonRadio,
   IonLabel,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { LocationService } from 'src/app/core/services/location-service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
